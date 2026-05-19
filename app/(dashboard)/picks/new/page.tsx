@@ -196,7 +196,7 @@ export default function NewPickPage() {
                 >
                   {LEAGUES.map((l) => (
                     <button
-                      key={l.value}
+                      key={l}
                       type="button"
                       onMouseDown={() => { setValue("league", l); setLeagueOpen(false); }}
                       className="flex items-center gap-3 w-full px-3 py-2.5 text-left transition-all"
