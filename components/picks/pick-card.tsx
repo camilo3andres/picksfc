@@ -88,6 +88,12 @@ export default function PickCard({ pick, currentUserId, userLiked, defaultShowCo
     router.refresh();
   }
 
+  async function handleDelete() {
+    if (!confirm("¿Seguro que querés borrar este pick?")) return;
+    await supabase.from("picks").delete().eq("id", pick.id);
+    router.refresh();
+  }
+
   async function handleLike() {
     setAnimating(true);
     setTimeout(() => setAnimating(false), 300);
@@ -314,6 +320,26 @@ export default function PickCard({ pick, currentUserId, userLiked, defaultShowCo
           <span>💬</span>
           <span className="font-semibold">{commentsCount > 0 ? commentsCount : "Comentar"}</span>
         </button>
+
+        {pick.user_id === currentUserId && (
+          <button
+            onClick={handleDelete}
+            className="text-xs font-semibold px-2.5 py-1 rounded-lg transition-all"
+            style={{ color: "#6b87ab", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = "#f87171";
+              e.currentTarget.style.background = "rgba(248,113,113,0.08)";
+              e.currentTarget.style.borderColor = "rgba(248,113,113,0.18)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = "#6b87ab";
+              e.currentTarget.style.background = "rgba(255,255,255,0.03)";
+              e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)";
+            }}
+          >
+            🗑 Borrar
+          </button>
+        )}
 
         <Link
           href={`/picks/${pick.id}`}
