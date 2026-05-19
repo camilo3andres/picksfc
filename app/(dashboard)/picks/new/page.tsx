@@ -30,7 +30,7 @@ const PREDICTIONS = [
 
 const pickSchema = z.object({
   league:     z.string().min(1, "Seleccioná una liga"),
-  prediction: z.enum(["home", "draw", "away"], { required_error: "Seleccioná un pronóstico" }),
+  prediction: z.enum(["home", "draw", "away"]),
   match_date: z.string().min(1, "Ingresá la fecha del partido"),
   reasoning:  z.string().max(500, "Máximo 500 caracteres").optional(),
 });
