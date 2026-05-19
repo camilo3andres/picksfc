@@ -15,6 +15,7 @@ type Props = {
   defaultShowComments?: boolean;
   isFollowing?: boolean;
   onFollowChange?: (userId: string, nowFollowing: boolean) => void;
+  onDelete?: (pickId: string) => void;
 };
 
 const PREDICTION_LABEL = { home: "Local", draw: "Empate", away: "Visitante" };
@@ -58,7 +59,7 @@ const STATUS_CONFIG = {
   },
 };
 
-export default function PickCard({ pick, currentUserId, userLiked, defaultShowComments = false, isFollowing: initialIsFollowing, onFollowChange }: Props) {
+export default function PickCard({ pick, currentUserId, userLiked, defaultShowComments = false, isFollowing: initialIsFollowing, onFollowChange, onDelete }: Props) {
   const [liked, setLiked]               = useState(userLiked);
   const [likesCount, setLikesCount]     = useState(pick.likes_count);
   const [commentsCount, setCommentsCount] = useState(pick.comments_count);
@@ -91,6 +92,7 @@ export default function PickCard({ pick, currentUserId, userLiked, defaultShowCo
   async function handleDelete() {
     if (!confirm("¿Seguro que querés borrar este pick?")) return;
     await supabase.from("picks").delete().eq("id", pick.id);
+    onDelete?.(pick.id);
     router.refresh();
   }
 

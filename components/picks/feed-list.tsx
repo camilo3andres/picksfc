@@ -272,6 +272,7 @@ export default function FeedList({ initialPicks, initialLikedIds, currentUserId,
                   nowFollowing ? [...prev, userId] : prev.filter((id) => id !== userId)
                 );
               }}
+              onDelete={(pickId) => setPicks((prev) => prev.filter((p) => p.id !== pickId))}
             />
           ))}
         </div>
