@@ -72,9 +72,9 @@ export default function ResetPasswordPage() {
               type={showPassword ? "text" : "password"}
               placeholder="Mínimo 6 caracteres"
               style={{ ...inputStyle, paddingRight: "40px" }}
+              {...register("password")}
               onFocus={(e) => { e.target.style.border = "1px solid rgba(34,197,94,0.45)"; e.target.style.boxShadow = "0 0 0 3px rgba(34,197,94,0.07)"; }}
               onBlur={(e)  => { e.target.style.border = "1px solid rgba(255,255,255,0.09)"; e.target.style.boxShadow = "none"; }}
-              {...register("password")}
             />
             <button type="button" onClick={() => setShowPassword(!showPassword)}
               className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
@@ -92,9 +92,9 @@ export default function ResetPasswordPage() {
               type={showConfirm ? "text" : "password"}
               placeholder="Repetí la contraseña"
               style={{ ...inputStyle, paddingRight: "40px" }}
+              {...register("confirm")}
               onFocus={(e) => { e.target.style.border = "1px solid rgba(34,197,94,0.45)"; e.target.style.boxShadow = "0 0 0 3px rgba(34,197,94,0.07)"; }}
               onBlur={(e)  => { e.target.style.border = "1px solid rgba(255,255,255,0.09)"; e.target.style.boxShadow = "none"; }}
-              {...register("confirm")}
             />
             <button type="button" onClick={() => setShowConfirm(!showConfirm)}
               className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"

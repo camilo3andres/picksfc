@@ -101,9 +101,9 @@ export default function RegisterPage() {
             type="text"
             placeholder="crack10"
             style={inputStyle}
+            {...register("username")}
             onFocus={(e) => { e.target.style.border = "1px solid rgba(34,197,94,0.45)"; e.target.style.boxShadow = "0 0 0 3px rgba(34,197,94,0.07)"; }}
             onBlur={(e)  => { e.target.style.border = "1px solid rgba(255,255,255,0.09)"; e.target.style.boxShadow = "none"; }}
-            {...register("username")}
           />
           {errors.username && <p className="text-red-400 text-xs">{errors.username.message}</p>}
         </div>
@@ -114,9 +114,9 @@ export default function RegisterPage() {
             type="email"
             placeholder="tu@email.com"
             style={inputStyle}
+            {...register("email")}
             onFocus={(e) => { e.target.style.border = "1px solid rgba(34,197,94,0.45)"; e.target.style.boxShadow = "0 0 0 3px rgba(34,197,94,0.07)"; }}
             onBlur={(e)  => { e.target.style.border = "1px solid rgba(255,255,255,0.09)"; e.target.style.boxShadow = "none"; }}
-            {...register("email")}
           />
           {errors.email && <p className="text-red-400 text-xs">{errors.email.message}</p>}
         </div>
@@ -128,9 +128,9 @@ export default function RegisterPage() {
               type={showPassword ? "text" : "password"}
               placeholder="Creá tu contraseña para PicksFC"
               style={{ ...inputStyle, paddingRight: "40px" }}
+              {...register("password")}
               onFocus={(e) => { e.target.style.border = "1px solid rgba(34,197,94,0.45)"; e.target.style.boxShadow = "0 0 0 3px rgba(34,197,94,0.07)"; }}
               onBlur={(e)  => { e.target.style.border = "1px solid rgba(255,255,255,0.09)"; e.target.style.boxShadow = "none"; }}
-              {...register("password")}
             />
             <button type="button" onClick={() => setShowPassword(!showPassword)}
               className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"

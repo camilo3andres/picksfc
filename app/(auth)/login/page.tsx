@@ -71,9 +71,9 @@ export default function LoginPage() {
             type="email"
             placeholder="tu@email.com"
             style={inputStyle}
+            {...register("email")}
             onFocus={(e) => { e.target.style.border = "1px solid rgba(34,197,94,0.45)"; e.target.style.boxShadow = "0 0 0 3px rgba(34,197,94,0.07)"; }}
             onBlur={(e)  => { e.target.style.border = "1px solid rgba(255,255,255,0.09)"; e.target.style.boxShadow = "none"; }}
-            {...register("email")}
           />
           {errors.email && <p className="text-red-400 text-xs">{errors.email.message}</p>}
         </div>
@@ -85,9 +85,9 @@ export default function LoginPage() {
               type={showPassword ? "text" : "password"}
               placeholder="••••••••"
               style={{ ...inputStyle, paddingRight: "40px" }}
+              {...register("password")}
               onFocus={(e) => { e.target.style.border = "1px solid rgba(34,197,94,0.45)"; e.target.style.boxShadow = "0 0 0 3px rgba(34,197,94,0.07)"; }}
               onBlur={(e)  => { e.target.style.border = "1px solid rgba(255,255,255,0.09)"; e.target.style.boxShadow = "none"; }}
-              {...register("password")}
             />
             <button type="button" onClick={() => setShowPassword(!showPassword)}
               className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
