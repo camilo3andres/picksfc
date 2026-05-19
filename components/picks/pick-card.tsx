@@ -281,7 +281,7 @@ export default function PickCard({ pick, currentUserId, userLiked, defaultShowCo
       )}
 
       {/* Footer */}
-      <div className="flex items-center px-4 pb-4 pt-3 gap-4"
+      <div className="flex items-center flex-wrap px-4 pb-4 pt-3 gap-2"
         style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
         <button
           onClick={handleLike}
