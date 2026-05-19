@@ -61,7 +61,7 @@ export default function AdminMatchResolver({ pendingPicks }: Props) {
   function setScore(key: string, side: "home" | "away", value: string) {
     setScores((prev) => ({
       ...prev,
-      [key]: { home: "", away: "", ...prev[key], [side]: value },
+      [key]: { ...{ home: "", away: "" }, ...prev[key], [side]: value },
     }));
   }
 
