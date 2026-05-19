@@ -282,9 +282,9 @@ export default function NewPickPage() {
               border: "1px solid rgba(255,255,255,0.08)",
               color: "#f0f6ff",
             }}
+            {...register("reasoning")}
             onFocus={(e) => { e.target.style.border = "1px solid rgba(34,197,94,0.40)"; e.target.style.boxShadow = "0 0 0 3px rgba(34,197,94,0.07)"; }}
             onBlur={(e)  => { e.target.style.border = "1px solid rgba(255,255,255,0.08)"; e.target.style.boxShadow = "none"; }}
-            {...register("reasoning")}
           />
           {errors.reasoning && <p className="text-red-400 text-xs">{errors.reasoning.message}</p>}
         </div>
