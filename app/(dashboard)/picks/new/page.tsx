@@ -284,15 +284,15 @@ export default function NewPickPage() {
           <textarea
             placeholder="¿Por qué apostás a este resultado? Compartí tu análisis..."
             rows={3}
-            className="w-full text-sm outline-none rounded-xl px-3 py-2.5 resize-none transition-all"
+            className="w-full text-sm outline-none rounded-xl px-3 py-2.5 resize-none transition-all placeholder:text-[#4a6080]"
             style={{
-              background: "rgba(255,255,255,0.04)",
-              border: "1px solid rgba(255,255,255,0.08)",
+              background: "rgba(255,255,255,0.08)",
+              border: "1px solid rgba(255,255,255,0.12)",
               color: "#f0f6ff",
             }}
             {...register("reasoning")}
             onFocus={(e) => { e.target.style.border = "1px solid rgba(34,197,94,0.40)"; e.target.style.boxShadow = "0 0 0 3px rgba(34,197,94,0.07)"; }}
-            onBlur={(e)  => { e.target.style.border = "1px solid rgba(255,255,255,0.08)"; e.target.style.boxShadow = "none"; }}
+            onBlur={(e)  => { e.target.style.border = "1px solid rgba(255,255,255,0.12)"; e.target.style.boxShadow = "none"; }}
           />
           {errors.reasoning && <p className="text-red-400 text-xs">{errors.reasoning.message}</p>}
         </div>
