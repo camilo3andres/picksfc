@@ -33,8 +33,10 @@ export default function AdminPickCard({ pick }: Props) {
 
   async function updateStatus(newStatus: "correct" | "incorrect" | "pending") {
     setSaving(true);
+    // Solo actualiza el estado, nunca toca el marcador
     await supabase.from("picks").update({ status: newStatus }).eq("id", pick.id);
     setStatus(newStatus);
+    if (newStatus === "pending") setEditScore(false);
     setSaving(false);
     router.refresh();
   }
@@ -171,14 +173,16 @@ export default function AdminPickCard({ pick }: Props) {
         >
           ✗ Incorrecto
         </button>
-        <button
-          disabled={saving || status === "pending"}
-          onClick={() => updateStatus("pending")}
-          className="px-3 py-2 rounded-xl text-xs font-semibold transition-all disabled:opacity-40"
-          style={{ background: "rgba(255,255,255,0.04)", color: "#4a6080", border: "1px solid rgba(255,255,255,0.08)" }}
-        >
-          Reset
-        </button>
+        {status !== "pending" && (
+          <button
+            disabled={saving}
+            onClick={() => updateStatus("pending")}
+            className="px-3 py-2 rounded-xl text-xs font-semibold transition-all disabled:opacity-40"
+            style={{ background: "rgba(255,255,255,0.04)", color: "#4a6080", border: "1px solid rgba(255,255,255,0.08)" }}
+          >
+            Reset
+          </button>
+        )}
         {hasScore && (
           <button
             onClick={() => setEditScore((v) => !v)}
