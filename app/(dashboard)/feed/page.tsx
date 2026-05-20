@@ -20,17 +20,15 @@ export default async function FeedPage() {
   return (
     <div className="space-y-5">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-white text-2xl font-black tracking-tight flex items-center gap-2">
-            <Image src="/icon.png" alt="" width={28} height={28} className="inline-block" />
-            <span><span className="text-green-400">Picks</span> de la comunidad</span>
-          </h1>
-          <p className="text-[#6b7fa3] text-sm mt-0.5">Pronósticos en vivo · Compite con la comunidad</p>
-        </div>
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="text-white text-2xl font-black tracking-tight flex items-center gap-2">
+          <Image src="/icon.png" alt="" width={28} height={28} className="inline-block flex-shrink-0" />
+          <span><span className="text-green-400">Picks</span> de la comunidad</span>
+        </h1>
         <Link
           href="/picks/new"
-          className="bg-green-600 hover:bg-green-500 text-white font-bold text-sm px-4 py-2.5 rounded-xl transition-all shadow-md shadow-green-900/30 hover:shadow-green-700/30"
+          className="flex-shrink-0 whitespace-nowrap text-white font-bold text-sm px-4 py-2.5 rounded-xl transition-all"
+          style={{ background: "linear-gradient(135deg, #22c55e, #16a34a)", boxShadow: "0 4px 14px rgba(34,197,94,0.30)" }}
         >
           + Nuevo pick
         </Link>
