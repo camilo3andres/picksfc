@@ -21,11 +21,9 @@ export default async function PickDetailPage({ params }: Props) {
 
   if (!pick) notFound();
 
-  const { data: userLikes } = await supabase
-    .from("likes")
-    .select("pick_id")
-    .eq("user_id", user!.id)
-    .eq("pick_id", id);
+  const { data: userLikes } = user
+    ? await supabase.from("likes").select("pick_id").eq("user_id", user.id).eq("pick_id", id)
+    : { data: [] };
 
   const userLiked = (userLikes?.length ?? 0) > 0;
 
@@ -55,7 +53,7 @@ export default async function PickDetailPage({ params }: Props) {
       {/* Pick */}
       <PickCard
         pick={pick as any}
-        currentUserId={user!.id}
+        currentUserId={user?.id ?? null}
         userLiked={userLiked}
         defaultShowComments={true}
       />
