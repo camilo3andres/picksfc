@@ -132,8 +132,8 @@ export default function FeedList({ initialPicks, initialLikedIds, currentUserId,
         ))}
       </div>
 
-      {/* Toggle Siguiendo */}
-      <div>
+      {/* Toggle Siguiendo — solo para usuarios con sesión */}
+      {currentUserId && <div>
         <button
           onClick={() => setFeedTab(feedTab === "following" ? "all" : "following")}
           className="text-sm font-bold px-4 py-1.5 rounded-xl transition-all"
@@ -150,7 +150,7 @@ export default function FeedList({ initialPicks, initialLikedIds, currentUserId,
         >
           👥 Siguiendo
         </button>
-      </div>
+      </div>}
 
       {/* Filtro por fecha */}
       <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
