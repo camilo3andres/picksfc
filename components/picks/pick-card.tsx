@@ -211,40 +211,40 @@ export default function PickCard({ pick, currentUserId, userLiked, defaultShowCo
         background: "linear-gradient(160deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.02) 100%)",
         border: "1px solid rgba(255,255,255,0.07)",
       }}>
-        <div className="flex items-center justify-between px-4 pt-6 pb-4 gap-2">
+        <div className="flex items-center justify-between px-3 pt-4 pb-3 gap-1">
 
           {/* Home */}
-          <div className="flex-1 flex flex-col items-center gap-2.5 text-center">
+          <div className="flex-1 flex flex-col items-center gap-2 text-center min-w-0">
             {pick.home_team_logo ? (
-              <Image src={pick.home_team_logo} alt={pick.home_team} width={56} height={56}
+              <Image src={pick.home_team_logo} alt={pick.home_team} width={48} height={48}
                 className="object-contain transition-transform duration-300 group-hover:scale-105 drop-shadow-lg" unoptimized />
             ) : (
-              <div className="w-14 h-14 rounded-full flex items-center justify-center text-2xl"
+              <div className="w-12 h-12 rounded-full flex items-center justify-center text-xl"
                 style={{ background: "rgba(255,255,255,0.06)" }}>⚽</div>
             )}
-            <p className="text-white font-black text-sm sm:text-base leading-tight">{pick.home_team}</p>
-            <p className="text-xs font-semibold" style={{ color: "#6b87ab" }}>Local</p>
+            <p className="text-white font-black text-xs sm:text-sm leading-tight truncate w-full px-1">{pick.home_team}</p>
+            <p className="text-[10px] font-semibold" style={{ color: "#6b87ab" }}>Local</p>
           </div>
 
           {/* Score / VS */}
-          <div className="flex flex-col items-center px-2 flex-shrink-0">
+          <div className="flex flex-col items-center px-1 flex-shrink-0">
             {hasResult ? (
               <div className="score-pop text-center">
-                <div className="flex items-center gap-2">
-                  <span className="font-black tabular-nums leading-none text-3xl sm:text-4xl" style={{ color: "#f0f6ff", textShadow: "0 0 16px rgba(255,255,255,0.12)" }}>
+                <div className="flex items-center gap-1.5">
+                  <span className="font-black tabular-nums leading-none text-2xl sm:text-3xl" style={{ color: "#f0f6ff", textShadow: "0 0 16px rgba(255,255,255,0.12)" }}>
                     {pick.home_score}
                   </span>
-                  <span className="font-black text-lg sm:text-xl" style={{ color: "#7a9ab8" }}>-</span>
-                  <span className="font-black tabular-nums leading-none text-3xl sm:text-4xl" style={{ color: "#f0f6ff", textShadow: "0 0 16px rgba(255,255,255,0.12)" }}>
+                  <span className="font-black text-base" style={{ color: "#7a9ab8" }}>-</span>
+                  <span className="font-black tabular-nums leading-none text-2xl sm:text-3xl" style={{ color: "#f0f6ff", textShadow: "0 0 16px rgba(255,255,255,0.12)" }}>
                     {pick.away_score}
                   </span>
                 </div>
-                <span className="text-xs font-bold tracking-widest uppercase mt-1 block" style={{ color: "#6b87ab" }}>Final</span>
+                <span className="text-[10px] font-bold tracking-widest uppercase mt-1 block" style={{ color: "#6b87ab" }}>Final</span>
               </div>
             ) : (
               <div className="text-center">
-                <span className="font-black" style={{ fontSize: "1.1rem", color: "#7a9ab8", letterSpacing: "0.15em" }}>VS</span>
-                <span className="block text-xs mt-1" style={{ color: "#7a9ab8" }}>
+                <span className="font-black" style={{ fontSize: "1rem", color: "#7a9ab8", letterSpacing: "0.12em" }}>VS</span>
+                <span className="block text-[10px] mt-1" style={{ color: "#7a9ab8" }}>
                   {new Date(pick.match_date).toLocaleDateString("es-ES", { day: "numeric", month: "short" })}
                 </span>
               </div>
@@ -252,22 +252,22 @@ export default function PickCard({ pick, currentUserId, userLiked, defaultShowCo
           </div>
 
           {/* Away */}
-          <div className="flex-1 flex flex-col items-center gap-2.5 text-center">
+          <div className="flex-1 flex flex-col items-center gap-2 text-center min-w-0">
             {pick.away_team_logo ? (
-              <Image src={pick.away_team_logo} alt={pick.away_team} width={56} height={56}
+              <Image src={pick.away_team_logo} alt={pick.away_team} width={48} height={48}
                 className="object-contain transition-transform duration-300 group-hover:scale-105 drop-shadow-lg" unoptimized />
             ) : (
-              <div className="w-14 h-14 rounded-full flex items-center justify-center text-2xl"
+              <div className="w-12 h-12 rounded-full flex items-center justify-center text-xl"
                 style={{ background: "rgba(255,255,255,0.06)" }}>⚽</div>
             )}
-            <p className="text-white font-black text-sm sm:text-base leading-tight">{pick.away_team}</p>
-            <p className="text-xs font-semibold" style={{ color: "#6b87ab" }}>Visitante</p>
+            <p className="text-white font-black text-xs sm:text-sm leading-tight truncate w-full px-1">{pick.away_team}</p>
+            <p className="text-[10px] font-semibold" style={{ color: "#6b87ab" }}>Visitante</p>
           </div>
         </div>
 
         {/* Predicción */}
-        <div className="flex justify-center pb-5">
-          <span className="px-5 py-1.5 rounded-full text-sm font-black tracking-wide"
+        <div className="flex justify-center pb-4">
+          <span className="px-4 py-1.5 rounded-full text-xs font-black tracking-wide"
             style={PREDICTION_STYLE[pick.prediction]}>
             {PREDICTION_LABEL[pick.prediction]}
           </span>
