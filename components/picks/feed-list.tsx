@@ -34,6 +34,8 @@ const STATUSES = [
   { value: "incorrect", label: "❌ Incorrectos" },
 ];
 
+const WEEKDAY_ES = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"];
+
 function getDateDays(offsetDays: number) {
   const d = new Date();
   d.setDate(d.getDate() + offsetDays);
@@ -43,18 +45,18 @@ function getDateDays(offsetDays: number) {
 function buildDateRange() {
   const days = [];
   for (let i = -3; i <= 3; i++) {
-    const iso = getDateDays(i);
-    const d = new Date(iso + "T12:00:00");
+    const d = new Date();
+    d.setDate(d.getDate() + i);
+    const iso = d.toISOString().split("T")[0];
     const label = i === 0 ? "Hoy" : i === -1 ? "Ayer" : i === 1 ? "Mañana"
-      : d.toLocaleDateString("es-ES", { weekday: "short", day: "numeric" });
+      : `${WEEKDAY_ES[d.getDay()]} ${d.getDate()}`;
     days.push({ iso, label });
   }
   return days;
 }
 
-const DATE_RANGE = buildDateRange();
-
 export default function FeedList({ initialPicks, initialLikedIds, currentUserId, followingIds: initialFollowingIds }: Props) {
+  const DATE_RANGE = buildDateRange();
   const [picks, setPicks] = useState<PickWithProfile[]>(initialPicks);
   const [league, setLeague] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
