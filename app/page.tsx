@@ -20,15 +20,14 @@ export default async function HomePage() {
             <Image src="/icon.png" alt="PicksFC" width={36} height={36} className="rounded-xl" />
             <span className="text-lg font-black" style={{ color: "#f0f6ff" }}>Picks<span style={{ color: "#4ade80" }}>FC</span></span>
           </div>
-          <div className="flex items-center gap-2">
-            <Link href="/login" className="hidden sm:block text-sm font-semibold px-3 py-1.5 rounded-xl"
+          <div className="flex items-center gap-1.5">
+            <Link href="/login" className="text-xs sm:text-sm font-semibold px-2.5 sm:px-3 py-1.5 rounded-xl whitespace-nowrap"
               style={{ color: "#8fa8cc", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
               Iniciar sesión
             </Link>
-            <Link href="/register" className="text-sm font-bold px-3 py-1.5 rounded-xl whitespace-nowrap"
+            <Link href="/register" className="text-xs sm:text-sm font-bold px-2.5 sm:px-3 py-1.5 rounded-xl whitespace-nowrap"
               style={{ background: "linear-gradient(135deg, #22c55e, #16a34a)", color: "#fff", boxShadow: "0 2px 10px rgba(34,197,94,0.25)" }}>
-              <span className="sm:hidden">Entrar</span>
-              <span className="hidden sm:inline">Registrate gratis</span>
+              Registrate gratis
             </Link>
           </div>
         </div>
