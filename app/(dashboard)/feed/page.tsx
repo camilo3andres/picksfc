@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase-server";
 import FeedList from "@/components/picks/feed-list";
 
@@ -20,8 +21,9 @@ export default async function FeedPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-white text-2xl font-black tracking-tight">
-            ⚽ <span className="text-green-400">Picks</span> de la comunidad
+          <h1 className="text-white text-2xl font-black tracking-tight flex items-center gap-2">
+            <Image src="/icon.png" alt="" width={28} height={28} className="inline-block" />
+            <span><span className="text-green-400">Picks</span> de la comunidad</span>
           </h1>
           <p className="text-[#6b7fa3] text-sm mt-0.5">Pronósticos en vivo · Compite con la comunidad</p>
         </div>

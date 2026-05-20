@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen flex items-center justify-center p-4" style={{
@@ -7,10 +9,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-3 mb-3">
-            <div className="w-11 h-11 rounded-2xl flex items-center justify-center text-xl font-black"
-              style={{ background: "linear-gradient(135deg, #22c55e, #15803d)", boxShadow: "0 4px 18px rgba(34,197,94,0.35)" }}>
-              ⚽
-            </div>
+            <Image src="/icon.png" alt="PicksFC" width={44} height={44} className="rounded-2xl" style={{ boxShadow: "0 4px 18px rgba(34,197,94,0.35)" }} />
             <span className="text-3xl font-black tracking-tight" style={{ color: "#f0f6ff" }}>
               Picks<span style={{ color: "#4ade80" }}>FC</span>
             </span>

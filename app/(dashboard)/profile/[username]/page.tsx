@@ -251,7 +251,7 @@ export default async function ProfilePage({ params }: Props) {
             background: "rgba(255,255,255,0.02)",
             border: "1px solid rgba(255,255,255,0.05)",
           }}>
-            <p className="text-4xl mb-3">⚽</p>
+            <div className="flex justify-center mb-3"><Image src="/icon.png" alt="" width={52} height={52} /></div>
             <p className="font-semibold" style={{ color: "#4a6080" }}>
               {isOwnProfile ? "Aún no publicaste picks" : "Este usuario aún no publicó picks"}
             </p>

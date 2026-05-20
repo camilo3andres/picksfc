@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { Home, Trophy, PlusCircle, User, Settings, LogOut, Zap } from "lucide-react";
 import { createClient } from "@/lib/supabase";
@@ -37,12 +38,7 @@ export default function Navbar({ username, isAdmin }: Props) {
 
           {/* Logo */}
           <Link href="/feed" className="flex items-center gap-2.5 group">
-            <div
-              className="w-9 h-9 rounded-xl flex items-center justify-center text-lg font-black transition-transform group-hover:scale-105"
-              style={{ background: "linear-gradient(135deg, #22c55e 0%, #15803d 100%)", boxShadow: "0 4px 14px rgba(34,197,94,0.35)" }}
-            >
-              ⚽
-            </div>
+            <Image src="/icon.png" alt="PicksFC" width={36} height={36} className="rounded-xl transition-transform group-hover:scale-105" style={{ boxShadow: "0 4px 14px rgba(34,197,94,0.35)" }} />
             <div className="flex flex-col leading-none">
               <span className="text-lg font-black tracking-tight" style={{ color: "#f0f6ff" }}>
                 Picks<span style={{ color: "#4ade80" }}>FC</span>

@@ -94,8 +94,9 @@ export default function NewPickPage() {
 
       {/* Header */}
       <div className="mb-5">
-        <h1 className="text-2xl font-black" style={{ color: "#f0f6ff" }}>
-          ⚽ <span style={{ color: "#4ade80" }}>Nuevo</span> pick
+        <h1 className="text-2xl font-black flex items-center gap-2" style={{ color: "#f0f6ff" }}>
+          <Image src="/icon.png" alt="" width={28} height={28} className="inline-block" />
+          <span><span style={{ color: "#4ade80" }}>Nuevo</span> pick</span>
         </h1>
         <p className="text-sm mt-0.5" style={{ color: "#4a6080" }}>Publicá tu pronóstico y compite con la comunidad</p>
       </div>
