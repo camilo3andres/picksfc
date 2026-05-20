@@ -121,11 +121,12 @@ export default function FeedList({ initialPicks, initialLikedIds, currentUserId,
   return (
     <div className="space-y-4">
       {/* Stats rápidas */}
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-4 gap-2">
         {[
-          { label: "Total picks", value: picks.length, color: "#8fa8cc" },
-          { label: "Correctos", value: picks.filter(p => p.status === "correct").length, color: "#4ade80" },
-          { label: "Pendientes", value: picks.filter(p => p.status === "pending").length, color: "#fbbf24" },
+          { label: "Total",       value: picks.length,                                              color: "#8fa8cc" },
+          { label: "Correctos",   value: picks.filter(p => p.status === "correct").length,          color: "#4ade80" },
+          { label: "Incorrectos", value: picks.filter(p => p.status === "incorrect").length,        color: "#f87171" },
+          { label: "Pendientes",  value: picks.filter(p => p.status === "pending").length,          color: "#fbbf24" },
         ].map(({ label, value, color }) => (
           <div key={label} className="rounded-xl px-3 py-2.5 text-center" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
             <p className="text-lg font-black" style={{ color }}>{value}</p>
