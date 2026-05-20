@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -43,6 +43,13 @@ export default function NewPickPage() {
   const [error, setError]       = useState<string | null>(null);
   const [homeTeam, setHomeTeam] = useState({ name: "", logo: "" });
   const [awayTeam, setAwayTeam] = useState({ name: "", logo: "" });
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) router.replace("/login");
+    });
+  }, [router]);
 
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<PickForm>({
     resolver: zodResolver(pickSchema),

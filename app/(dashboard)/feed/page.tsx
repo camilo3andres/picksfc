@@ -7,14 +7,15 @@ export default async function FeedPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
+  const picksQuery = supabase.from("picks").select("*, profiles(username)").order("created_at", { ascending: false });
   const [{ data: picks }, { data: userLikes }, { data: followingData }] = await Promise.all([
-    supabase.from("picks").select("*, profiles(username)").order("created_at", { ascending: false }),
-    supabase.from("likes").select("pick_id").eq("user_id", user!.id),
-    supabase.from("follows").select("following_id").eq("follower_id", user!.id),
+    picksQuery,
+    user ? supabase.from("likes").select("pick_id").eq("user_id", user.id) : Promise.resolve({ data: [] }),
+    user ? supabase.from("follows").select("following_id").eq("follower_id", user.id) : Promise.resolve({ data: [] }),
   ]);
 
-  const likedPickIds = userLikes?.map((l) => l.pick_id) ?? [];
-  const followingIds = followingData?.map((f) => f.following_id) ?? [];
+  const likedPickIds = (userLikes ?? []).map((l: any) => l.pick_id);
+  const followingIds = (followingData ?? []).map((f: any) => f.following_id);
 
   return (
     <div className="space-y-5">
@@ -38,7 +39,7 @@ export default async function FeedPage() {
       <FeedList
         initialPicks={(picks ?? []) as any}
         initialLikedIds={likedPickIds}
-        currentUserId={user!.id}
+        currentUserId={user?.id ?? ""}
         followingIds={followingIds}
       />
     </div>

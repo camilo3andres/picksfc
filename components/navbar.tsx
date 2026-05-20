@@ -9,9 +9,10 @@ import { createClient } from "@/lib/supabase";
 type Props = {
   username: string | null;
   isAdmin: boolean;
+  isLoggedIn: boolean;
 };
 
-export default function Navbar({ username, isAdmin }: Props) {
+export default function Navbar({ username, isAdmin, isLoggedIn }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const supabase = createClient();
@@ -98,36 +99,56 @@ export default function Navbar({ username, isAdmin }: Props) {
               <Zap size={14} fill="white" /> Nuevo pick
             </Link>
 
-            {/* Avatar */}
-            <Link href={`/profile/${username}`} className="flex items-center gap-2 ml-3 pl-3 border-l border-white/10 hover:opacity-80 transition-opacity">
-              <div
-                className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-black text-white"
-                style={{ background: "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)", boxShadow: "0 2px 8px rgba(59,130,246,0.35)" }}
-              >
-                {username?.[0]?.toUpperCase()}
+            {isLoggedIn ? (
+              <>
+                <Link href={`/profile/${username}`} className="flex items-center gap-2 ml-3 pl-3 border-l border-white/10 hover:opacity-80 transition-opacity">
+                  <div
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-black text-white"
+                    style={{ background: "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)", boxShadow: "0 2px 8px rgba(59,130,246,0.35)" }}
+                  >
+                    {username?.[0]?.toUpperCase()}
+                  </div>
+                  <div className="flex flex-col leading-none">
+                    <span className="text-xs font-bold" style={{ color: "#f0f6ff" }}>@{username}</span>
+                    <span className="text-[10px]" style={{ color: "#4a6080" }}>Mi perfil</span>
+                  </div>
+                </Link>
+                <button onClick={handleLogout} className="ml-2 p-1.5 rounded-lg transition-all hover:bg-white/5" style={{ color: "#4a6080" }}>
+                  <LogOut size={14} />
+                </button>
+              </>
+            ) : (
+              <div className="flex items-center gap-2 ml-3 pl-3 border-l border-white/10">
+                <Link href="/login" className="text-sm font-semibold px-3 py-1.5 rounded-xl transition-all"
+                  style={{ color: "#8fa8cc", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+                  Iniciar sesión
+                </Link>
+                <Link href="/register" className="text-sm font-bold px-3 py-1.5 rounded-xl transition-all"
+                  style={{ background: "linear-gradient(135deg, #22c55e, #16a34a)", color: "#fff", boxShadow: "0 2px 10px rgba(34,197,94,0.25)" }}>
+                  Registrate
+                </Link>
               </div>
-              <div className="flex flex-col leading-none">
-                <span className="text-xs font-bold" style={{ color: "#f0f6ff" }}>@{username}</span>
-                <span className="text-[10px]" style={{ color: "#4a6080" }}>Mi perfil</span>
-              </div>
-            </Link>
-
-            <button onClick={handleLogout} className="ml-2 p-1.5 rounded-lg transition-all hover:bg-white/5" style={{ color: "#4a6080" }}>
-              <LogOut size={14} />
-            </button>
+            )}
           </div>
 
-          {/* Mobile — avatar */}
+          {/* Mobile — avatar o login */}
           <div className="flex md:hidden items-center gap-2">
-            <Link href={`/profile/${username}`} className="flex items-center gap-2">
-              <div
-                className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-black text-white"
-                style={{ background: "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)" }}
-              >
-                {username?.[0]?.toUpperCase()}
-              </div>
-              <span className="text-sm font-semibold" style={{ color: "#8fa8cc" }}>@{username}</span>
-            </Link>
+            {isLoggedIn ? (
+              <Link href={`/profile/${username}`} className="flex items-center gap-2">
+                <div
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-black text-white"
+                  style={{ background: "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)" }}
+                >
+                  {username?.[0]?.toUpperCase()}
+                </div>
+                <span className="text-sm font-semibold" style={{ color: "#8fa8cc" }}>@{username}</span>
+              </Link>
+            ) : (
+              <Link href="/login" className="text-sm font-bold px-3 py-1.5 rounded-xl"
+                style={{ background: "linear-gradient(135deg, #22c55e, #16a34a)", color: "#fff" }}>
+                Entrar
+              </Link>
+            )}
           </div>
         </div>
       </nav>

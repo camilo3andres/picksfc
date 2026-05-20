@@ -29,12 +29,11 @@ export default async function ProfilePage({ params }: Props) {
     .eq("user_id", profile.id)
     .order("created_at", { ascending: false });
 
-  const { data: userLikes } = await supabase
-    .from("likes")
-    .select("pick_id")
-    .eq("user_id", user!.id);
+  const { data: userLikes } = user
+    ? await supabase.from("likes").select("pick_id").eq("user_id", user.id)
+    : { data: [] };
 
-  const likedPickIds = new Set(userLikes?.map((l) => l.pick_id) ?? []);
+  const likedPickIds = new Set((userLikes ?? []).map((l: any) => l.pick_id));
 
   const totalPicks    = picks?.length ?? 0;
   const correctPicks  = picks?.filter((p) => p.status === "correct").length ?? 0;
@@ -64,13 +63,15 @@ export default async function ProfilePage({ params }: Props) {
 
   const isOwnProfile = user?.id === profile.id;
 
-  const [{ count: followersCount }, { count: followingCount }, { data: followData }] = await Promise.all([
+  const [{ count: followersCount }, { count: followingCount }, followResult] = await Promise.all([
     supabase.from("follows").select("*", { count: "exact", head: true }).eq("following_id", profile.id),
     supabase.from("follows").select("*", { count: "exact", head: true }).eq("follower_id", profile.id),
-    supabase.from("follows").select("follower_id").eq("follower_id", user!.id).eq("following_id", profile.id).maybeSingle(),
+    user
+      ? supabase.from("follows").select("follower_id").eq("follower_id", user.id).eq("following_id", profile.id).maybeSingle()
+      : Promise.resolve({ data: null }),
   ]);
 
-  const isFollowing = !!followData;
+  const isFollowing = !!followResult.data;
 
   return (
     <div className="space-y-6">
@@ -121,9 +122,9 @@ export default async function ProfilePage({ params }: Props) {
                     </span>
                   )}
                 </div>
-                {!isOwnProfile && (
+                {!isOwnProfile && user && (
                   <FollowButton
-                    currentUserId={user!.id}
+                    currentUserId={user.id}
                     targetUserId={profile.id}
                     initialFollowing={isFollowing}
                   />
@@ -267,7 +268,7 @@ export default async function ProfilePage({ params }: Props) {
             <PickCard
               key={pick.id}
               pick={pick as any}
-              currentUserId={user!.id}
+              currentUserId={user?.id ?? null}
               userLiked={likedPickIds.has(pick.id)}
               isFollowing={isOwnProfile ? undefined : isFollowing}
             />

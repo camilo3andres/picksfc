@@ -10,7 +10,7 @@ import CommentsSection from "./comments-section";
 
 type Props = {
   pick: Pick & { profiles: { username: string } };
-  currentUserId: string;
+  currentUserId: string | null;
   userLiked: boolean;
   defaultShowComments?: boolean;
   isFollowing?: boolean;
@@ -76,6 +76,7 @@ export default function PickCard({ pick, currentUserId, userLiked, defaultShowCo
   const hasResult = pick.home_score !== null && pick.away_score !== null;
 
   async function handleFollow() {
+    if (!currentUserId) { router.push("/login"); return; }
     setFollowAnim(true);
     setTimeout(() => setFollowAnim(false), 400);
     const { data } = await supabase.rpc("toggle_follow", {
@@ -97,6 +98,7 @@ export default function PickCard({ pick, currentUserId, userLiked, defaultShowCo
   }
 
   async function handleLike() {
+    if (!currentUserId) { router.push("/login"); return; }
     setAnimating(true);
     setTimeout(() => setAnimating(false), 300);
     const { data } = await supabase.rpc("toggle_like", {
@@ -305,7 +307,7 @@ export default function PickCard({ pick, currentUserId, userLiked, defaultShowCo
         </button>
 
         <button
-          onClick={() => setShowComments((v) => !v)}
+          onClick={() => { if (!currentUserId) { router.push("/login"); return; } setShowComments((v) => !v); }}
           className="flex items-center gap-1.5 text-sm transition-all duration-200 px-2.5 py-1 rounded-lg"
           style={{ color: showComments ? "#4ade80" : "#4a6080" }}
           onMouseEnter={(e) => {
@@ -364,7 +366,7 @@ export default function PickCard({ pick, currentUserId, userLiked, defaultShowCo
         </Link>
       </div>
 
-      {showComments && (
+      {showComments && currentUserId && (
         <CommentsSection
           pickId={pick.id}
           currentUserId={currentUserId}
