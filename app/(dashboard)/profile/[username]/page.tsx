@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
-import Image from "next/image";
 import { createClient } from "@/lib/supabase-server";
 import PickCard from "@/components/picks/pick-card";
 import FollowButton from "@/components/profile/follow-button";
+import { getAvatarColor } from "@/lib/utils";
 
 type Props = {
   params: Promise<{ username: string }>;
@@ -29,11 +29,12 @@ export default async function ProfilePage({ params }: Props) {
     .eq("user_id", profile.id)
     .order("created_at", { ascending: false });
 
-  const { data: userLikes } = user
-    ? await supabase.from("likes").select("pick_id").eq("user_id", user.id)
-    : { data: [] };
+  const { data: userLikes } = await supabase
+    .from("likes")
+    .select("pick_id")
+    .eq("user_id", user!.id);
 
-  const likedPickIds = new Set((userLikes ?? []).map((l: any) => l.pick_id));
+  const likedPickIds = new Set(userLikes?.map((l) => l.pick_id) ?? []);
 
   const totalPicks    = picks?.length ?? 0;
   const correctPicks  = picks?.filter((p) => p.status === "correct").length ?? 0;
@@ -63,15 +64,13 @@ export default async function ProfilePage({ params }: Props) {
 
   const isOwnProfile = user?.id === profile.id;
 
-  const [{ count: followersCount }, { count: followingCount }, followResult] = await Promise.all([
+  const [{ count: followersCount }, { count: followingCount }, { data: followData }] = await Promise.all([
     supabase.from("follows").select("*", { count: "exact", head: true }).eq("following_id", profile.id),
     supabase.from("follows").select("*", { count: "exact", head: true }).eq("follower_id", profile.id),
-    user
-      ? supabase.from("follows").select("follower_id").eq("follower_id", user.id).eq("following_id", profile.id).maybeSingle()
-      : Promise.resolve({ data: null }),
+    supabase.from("follows").select("follower_id").eq("follower_id", user!.id).eq("following_id", profile.id).maybeSingle(),
   ]);
 
-  const isFollowing = !!followResult.data;
+  const isFollowing = !!followData;
 
   return (
     <div className="space-y-6">
@@ -98,8 +97,8 @@ export default async function ProfilePage({ params }: Props) {
             <div
               className="w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-black flex-shrink-0"
               style={{
-                background: "linear-gradient(135deg, #22c55e, #15803d)",
-                boxShadow: "0 0 14px rgba(34,197,94,0.25), 0 4px 10px rgba(0,0,0,0.25)",
+                background: getAvatarColor(profile.username).bg,
+                boxShadow: `0 0 14px ${getAvatarColor(profile.username).shadow}, 0 4px 10px rgba(0,0,0,0.25)`,
               }}
             >
               {profile.username[0].toUpperCase()}
@@ -122,9 +121,9 @@ export default async function ProfilePage({ params }: Props) {
                     </span>
                   )}
                 </div>
-                {!isOwnProfile && user && (
+                {!isOwnProfile && (
                   <FollowButton
-                    currentUserId={user.id}
+                    currentUserId={user!.id}
                     targetUserId={profile.id}
                     initialFollowing={isFollowing}
                   />
@@ -253,7 +252,7 @@ export default async function ProfilePage({ params }: Props) {
             background: "rgba(255,255,255,0.02)",
             border: "1px solid rgba(255,255,255,0.05)",
           }}>
-            <div className="flex justify-center mb-3"><Image src="/icon.png" alt="" width={52} height={52} /></div>
+            <p className="text-4xl mb-3">⚽</p>
             <p className="font-semibold" style={{ color: "#4a6080" }}>
               {isOwnProfile ? "Aún no publicaste picks" : "Este usuario aún no publicó picks"}
             </p>
@@ -268,7 +267,7 @@ export default async function ProfilePage({ params }: Props) {
             <PickCard
               key={pick.id}
               pick={pick as any}
-              currentUserId={user?.id ?? null}
+              currentUserId={user!.id}
               userLiked={likedPickIds.has(pick.id)}
               isFollowing={isOwnProfile ? undefined : isFollowing}
             />

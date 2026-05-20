@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase";
+import { getAvatarColor } from "@/lib/utils";
 
 type Profile = {
   username: string;
@@ -101,7 +102,7 @@ export default function LeaderboardPage() {
                   {/* Avatar */}
                   <div
                     className="w-10 h-10 rounded-full flex items-center justify-center text-white font-black text-sm flex-shrink-0"
-                    style={{ background: "linear-gradient(135deg, #22c55e, #15803d)" }}
+                    style={{ background: getAvatarColor(profile.username).bg }}
                   >
                     {profile.username[0].toUpperCase()}
                   </div>

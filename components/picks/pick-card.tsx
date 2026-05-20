@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase";
 import { Pick } from "@/lib/types";
+import { getAvatarColor } from "@/lib/utils";
 import CommentsSection from "./comments-section";
 
 type Props = {
@@ -136,7 +137,7 @@ export default function PickCard({ pick, currentUserId, userLiked, defaultShowCo
         <div className="flex items-center gap-2.5 min-w-0 flex-1">
           <div
             className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-black flex-shrink-0"
-            style={{ background: "linear-gradient(135deg, #22c55e, #15803d)", boxShadow: "0 2px 8px rgba(34,197,94,0.30)" }}
+            style={{ background: getAvatarColor(pick.profiles.username).bg, boxShadow: `0 2px 8px ${getAvatarColor(pick.profiles.username).shadow}` }}
           >
             {pick.profiles.username[0].toUpperCase()}
           </div>
