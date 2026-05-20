@@ -144,10 +144,16 @@ export default function Navbar({ username, isAdmin, isLoggedIn }: Props) {
                 <span className="text-sm font-semibold" style={{ color: "#8fa8cc" }}>@{username}</span>
               </Link>
             ) : (
-              <Link href="/login" className="text-sm font-bold px-3 py-1.5 rounded-xl"
-                style={{ background: "linear-gradient(135deg, #22c55e, #16a34a)", color: "#fff" }}>
-                Entrar
-              </Link>
+              <div className="flex items-center gap-1.5">
+                <Link href="/login" className="text-xs font-semibold px-2.5 py-1.5 rounded-xl"
+                  style={{ color: "#8fa8cc", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.10)" }}>
+                  Iniciar sesión
+                </Link>
+                <Link href="/register" className="text-xs font-bold px-2.5 py-1.5 rounded-xl"
+                  style={{ background: "linear-gradient(135deg, #22c55e, #16a34a)", color: "#fff", boxShadow: "0 2px 8px rgba(34,197,94,0.25)" }}>
+                  Registrate
+                </Link>
+              </div>
             )}
           </div>
         </div>
