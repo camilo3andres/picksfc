@@ -28,7 +28,7 @@ export async function proxy(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
 
   // Rutas protegidas — redirige al login si no hay sesión
-  const protectedRoutes = ["/feed", "/profile", "/picks/new"];
+  const protectedRoutes = ["/picks/new", "/admin"];
   const isProtected = protectedRoutes.some((route) =>
     request.nextUrl.pathname.startsWith(route)
   );
