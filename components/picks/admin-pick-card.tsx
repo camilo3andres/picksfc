@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase";
 import { Pick } from "@/lib/types";
 
@@ -28,12 +29,14 @@ export default function AdminPickCard({ pick }: Props) {
   const [homeScore, setHomeScore]   = useState(String(pick.home_score ?? ""));
   const [awayScore, setAwayScore]   = useState(String(pick.away_score ?? ""));
   const supabase = createClient();
+  const router   = useRouter();
 
   async function updateStatus(newStatus: "correct" | "incorrect" | "pending") {
     setSaving(true);
     await supabase.from("picks").update({ status: newStatus }).eq("id", pick.id);
     setStatus(newStatus);
     setSaving(false);
+    router.refresh();
   }
 
   async function saveScore() {
@@ -50,6 +53,7 @@ export default function AdminPickCard({ pick }: Props) {
     setStatus(newStatus);
     setEditScore(false);
     setSaving(false);
+    router.refresh();
   }
 
   const statusBadge = {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase";
 import { Pick } from "@/lib/types";
@@ -54,6 +55,7 @@ export default function AdminMatchResolver({ pendingPicks }: Props) {
   const [scores, setScores] = useState<Record<string, { home: string; away: string }>>({});
   const [resolving, setResolving] = useState<string | null>(null);
   const supabase = createClient();
+  const router   = useRouter();
 
   const matches = groupByMatch(pendingPicks).filter((m) => !resolvedKeys.has(m.key));
 
@@ -84,6 +86,7 @@ export default function AdminMatchResolver({ pendingPicks }: Props) {
 
     setResolvedKeys((prev) => new Set(prev).add(match.key));
     setResolving(null);
+    router.refresh();
   }
 
   if (matches.length === 0) {
