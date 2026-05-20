@@ -3,29 +3,16 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase";
 import { Pick } from "@/lib/types";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 
 type Props = {
   pick: Pick & { profiles: { username: string } };
 };
 
-const STATUS_STYLES = {
-  pending: "bg-zinc-700 text-zinc-300",
-  correct: "bg-green-900 text-green-400",
-  incorrect: "bg-red-900 text-red-400",
-};
-
-const STATUS_LABEL = {
-  pending: "Pendiente",
-  correct: "✓ Correcto",
-  incorrect: "✗ Incorrecto",
-};
-
-const PREDICTION_LABEL = {
-  home: "Local",
-  draw: "Empate",
-  away: "Visitante",
+const PREDICTION_LABEL = { home: "Local", draw: "Empate", away: "Visitante" };
+const PREDICTION_STYLE = {
+  home: { background: "linear-gradient(135deg, #2563eb, #1d4ed8)", color: "#fff" },
+  draw: { background: "linear-gradient(135deg, #d97706, #b45309)", color: "#fff" },
+  away: { background: "linear-gradient(135deg, #7c3aed, #6d28d9)", color: "#fff" },
 };
 
 export default function AdminPickCard({ pick }: Props) {
@@ -40,68 +27,83 @@ export default function AdminPickCard({ pick }: Props) {
     setSaving(false);
   }
 
+  const statusBadge = {
+    pending:   { label: "⏳ Pendiente",  style: { background: "rgba(251,191,36,0.12)",  color: "#fbbf24", border: "1px solid rgba(251,191,36,0.25)"  } },
+    correct:   { label: "✅ Correcto",   style: { background: "rgba(74,222,128,0.12)",  color: "#4ade80", border: "1px solid rgba(74,222,128,0.25)"   } },
+    incorrect: { label: "❌ Incorrecto", style: { background: "rgba(248,113,113,0.12)", color: "#f87171", border: "1px solid rgba(248,113,113,0.25)"  } },
+  }[status];
+
   return (
-    <Card className="bg-zinc-900 border-zinc-800">
-      <CardContent className="p-4 space-y-3">
-        <div className="flex items-center justify-between">
-          <span className="text-zinc-300 text-sm font-medium">@{pick.profiles.username}</span>
-          <div className="flex items-center gap-2">
-            <span className="text-zinc-500 text-xs bg-zinc-800 px-2 py-1 rounded">{pick.league}</span>
-            <span className={`text-xs px-2 py-1 rounded font-medium ${STATUS_STYLES[status]}`}>
-              {STATUS_LABEL[status]}
-            </span>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between bg-zinc-800 rounded-lg px-4 py-3">
-          <span className="text-white font-semibold text-sm">{pick.home_team}</span>
-          <span className="text-zinc-500 text-xs">vs</span>
-          <span className="text-white font-semibold text-sm">{pick.away_team}</span>
-        </div>
-
+    <div className="rounded-2xl p-4 space-y-3" style={{
+      background: "linear-gradient(160deg, #1f2f48 0%, #182438 100%)",
+      border: "1px solid rgba(255,255,255,0.07)",
+    }}>
+      {/* Header */}
+      <div className="flex items-center justify-between gap-2 flex-wrap">
         <div className="flex items-center gap-2">
-          <span className="text-zinc-400 text-xs">Pronóstico:</span>
-          <span className="bg-green-900 text-green-400 text-xs font-bold px-3 py-1 rounded-full">
-            {PREDICTION_LABEL[pick.prediction]}
-          </span>
-          <span className="text-zinc-600 text-xs ml-auto">
-            {new Date(pick.match_date).toLocaleDateString("es-ES", { day: "numeric", month: "short" })}
+          <span className="text-sm font-bold" style={{ color: "#8fa8cc" }}>@{pick.profiles.username}</span>
+          <span className="text-xs px-2 py-0.5 rounded-full font-semibold" style={{ background: "rgba(255,255,255,0.05)", color: "#4a6080" }}>
+            {pick.league}
           </span>
         </div>
+        <span className="text-xs px-2.5 py-1 rounded-full font-bold" style={statusBadge.style}>
+          {statusBadge.label}
+        </span>
+      </div>
 
-        {pick.reasoning && (
-          <p className="text-zinc-400 text-sm border-l-2 border-zinc-700 pl-3">{pick.reasoning}</p>
-        )}
+      {/* Partido */}
+      <div className="flex items-center justify-between rounded-xl px-4 py-3 gap-3" style={{
+        background: "rgba(255,255,255,0.04)",
+        border: "1px solid rgba(255,255,255,0.06)",
+      }}>
+        <span className="font-black text-sm flex-1" style={{ color: "#f0f6ff" }}>{pick.home_team}</span>
+        <span className="font-black text-xs flex-shrink-0" style={{ color: "#3a5070" }}>VS</span>
+        <span className="font-black text-sm flex-1 text-right" style={{ color: "#f0f6ff" }}>{pick.away_team}</span>
+      </div>
 
-        {/* Botones de admin */}
-        <div className="flex gap-2 pt-1 border-t border-zinc-800">
-          <Button
-            size="sm"
-            disabled={saving || status === "correct"}
-            onClick={() => updateStatus("correct")}
-            className="flex-1 bg-green-700 hover:bg-green-600 text-white text-xs"
-          >
-            ✓ Correcto
-          </Button>
-          <Button
-            size="sm"
-            disabled={saving || status === "incorrect"}
-            onClick={() => updateStatus("incorrect")}
-            className="flex-1 bg-red-800 hover:bg-red-700 text-white text-xs"
-          >
-            ✗ Incorrecto
-          </Button>
-          <Button
-            size="sm"
-            disabled={saving || status === "pending"}
-            onClick={() => updateStatus("pending")}
-            variant="ghost"
-            className="text-zinc-400 hover:text-white text-xs"
-          >
-            Resetear
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+      {/* Pronóstico + fecha */}
+      <div className="flex items-center gap-2">
+        <span className="text-xs px-3 py-1 rounded-full font-black" style={PREDICTION_STYLE[pick.prediction]}>
+          {PREDICTION_LABEL[pick.prediction]}
+        </span>
+        <span className="text-xs ml-auto" style={{ color: "#4a6080" }}>
+          {new Date(pick.match_date).toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" })}
+        </span>
+      </div>
+
+      {pick.reasoning && (
+        <p className="text-xs italic pl-3" style={{ color: "#6b87ab", borderLeft: "2px solid rgba(255,255,255,0.08)" }}>
+          "{pick.reasoning}"
+        </p>
+      )}
+
+      {/* Botones */}
+      <div className="flex gap-2 pt-1" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+        <button
+          disabled={saving || status === "correct"}
+          onClick={() => updateStatus("correct")}
+          className="flex-1 py-2 rounded-xl text-xs font-black transition-all disabled:opacity-40"
+          style={{ background: status === "correct" ? "rgba(74,222,128,0.20)" : "rgba(74,222,128,0.10)", color: "#4ade80", border: "1px solid rgba(74,222,128,0.25)" }}
+        >
+          ✓ Correcto
+        </button>
+        <button
+          disabled={saving || status === "incorrect"}
+          onClick={() => updateStatus("incorrect")}
+          className="flex-1 py-2 rounded-xl text-xs font-black transition-all disabled:opacity-40"
+          style={{ background: status === "incorrect" ? "rgba(248,113,113,0.20)" : "rgba(248,113,113,0.10)", color: "#f87171", border: "1px solid rgba(248,113,113,0.25)" }}
+        >
+          ✗ Incorrecto
+        </button>
+        <button
+          disabled={saving || status === "pending"}
+          onClick={() => updateStatus("pending")}
+          className="px-3 py-2 rounded-xl text-xs font-semibold transition-all disabled:opacity-40"
+          style={{ background: "rgba(255,255,255,0.04)", color: "#4a6080", border: "1px solid rgba(255,255,255,0.08)" }}
+        >
+          Reset
+        </button>
+      </div>
+    </div>
   );
 }
