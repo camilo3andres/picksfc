@@ -192,15 +192,7 @@ export default function Navbar({ username, isAdmin, isLoggedIn }: Props) {
             </div>
           </Link>
 
-          <Link
-            href={isLoggedIn ? `/profile/${username}` : "/login"}
-            className="flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-xl transition-all"
-            style={pathname.startsWith("/profile") ? { color: "#4ade80" } : { color: "#3a5070" }}
-          >
-            <User size={21} />
-            <span className="text-[10px] font-semibold">{isLoggedIn ? "Perfil" : "Entrar"}</span>
-          </Link>
-
+          {/* Slot 4: Admin (si es admin) / Perfil (si está logueado) / Entrar (anónimo) */}
           {isAdmin ? (
             <Link
               href="/admin"
@@ -210,7 +202,19 @@ export default function Navbar({ username, isAdmin, isLoggedIn }: Props) {
               <Settings size={21} />
               <span className="text-[10px] font-semibold">Admin</span>
             </Link>
-          ) : isLoggedIn ? (
+          ) : (
+            <Link
+              href={isLoggedIn ? `/profile/${username}` : "/login"}
+              className="flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-xl transition-all"
+              style={pathname.startsWith("/profile") ? { color: "#4ade80" } : { color: "#3a5070" }}
+            >
+              <User size={21} />
+              <span className="text-[10px] font-semibold">{isLoggedIn ? "Perfil" : "Entrar"}</span>
+            </Link>
+          )}
+
+          {/* Slot 5: Salir (si está logueado) / Registrate (anónimo) */}
+          {isLoggedIn ? (
             <button
               onClick={handleLogout}
               className="flex flex-col items-center gap-0.5 px-4 py-1.5"
