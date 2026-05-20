@@ -11,7 +11,7 @@ type PickWithProfile = Pick & { profiles: { username: string } };
 type Props = {
   initialPicks: PickWithProfile[];
   initialLikedIds: string[];
-  currentUserId: string;
+  currentUserId: string | null;
   followingIds: string[];
 };
 
@@ -63,6 +63,7 @@ export default function FeedList({ initialPicks, initialLikedIds, currentUserId,
   const [followingIds, setFollowingIds] = useState<string[]>(initialFollowingIds);
 
   useEffect(() => {
+    if (!currentUserId) return;
     async function fetchFollowing() {
       const { data } = await supabase
         .from("follows")

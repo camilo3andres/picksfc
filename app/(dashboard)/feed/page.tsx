@@ -39,7 +39,7 @@ export default async function FeedPage() {
       <FeedList
         initialPicks={(picks ?? []) as any}
         initialLikedIds={likedPickIds}
-        currentUserId={user?.id ?? ""}
+        currentUserId={user?.id ?? null}
         followingIds={followingIds}
       />
     </div>
