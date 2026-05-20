@@ -187,12 +187,12 @@ export default function Navbar({ username, isAdmin, isLoggedIn }: Props) {
           </Link>
 
           <Link
-            href={`/profile/${username}`}
+            href={isLoggedIn ? `/profile/${username}` : "/login"}
             className="flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-xl transition-all"
             style={pathname.startsWith("/profile") ? { color: "#4ade80" } : { color: "#3a5070" }}
           >
             <User size={21} />
-            <span className="text-[10px] font-semibold">Perfil</span>
+            <span className="text-[10px] font-semibold">{isLoggedIn ? "Perfil" : "Entrar"}</span>
           </Link>
 
           {isAdmin ? (
@@ -204,7 +204,7 @@ export default function Navbar({ username, isAdmin, isLoggedIn }: Props) {
               <Settings size={21} />
               <span className="text-[10px] font-semibold">Admin</span>
             </Link>
-          ) : (
+          ) : isLoggedIn ? (
             <button
               onClick={handleLogout}
               className="flex flex-col items-center gap-0.5 px-4 py-1.5"
@@ -213,6 +213,15 @@ export default function Navbar({ username, isAdmin, isLoggedIn }: Props) {
               <LogOut size={21} />
               <span className="text-[10px] font-semibold">Salir</span>
             </button>
+          ) : (
+            <Link
+              href="/register"
+              className="flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-xl transition-all"
+              style={{ color: "#3a5070" }}
+            >
+              <PlusCircle size={21} />
+              <span className="text-[10px] font-semibold">Registrate</span>
+            </Link>
           )}
         </div>
       </div>
