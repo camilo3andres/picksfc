@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase-server";
 import PickCard from "@/components/picks/pick-card";
 import FollowButton from "@/components/profile/follow-button";
