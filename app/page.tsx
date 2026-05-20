@@ -37,9 +37,8 @@ export default async function HomePage() {
       <div className="flex-1 flex flex-col items-center justify-center text-center px-4 py-16">
         <Image src="/icon.png" alt="PicksFC" width={96} height={96} className="rounded-3xl mb-6" style={{ boxShadow: "0 8px 40px rgba(34,197,94,0.25)" }} />
 
-        <h1 className="text-4xl sm:text-5xl font-black mb-4 leading-tight" style={{ color: "#f0f6ff" }}>
-          Pronosticá, compite y<br />
-          <span style={{ color: "#4ade80" }}>demuestra que sabés</span>
+        <h1 className="text-2xl sm:text-5xl font-black mb-4 leading-tight" style={{ color: "#f0f6ff" }}>
+          Pronosticá, compite y <span style={{ color: "#4ade80" }}>demuestra que sabés</span>
         </h1>
 
         <p className="text-lg mb-8 max-w-md" style={{ color: "#6b87ab" }}>
