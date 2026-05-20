@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase";
@@ -56,6 +56,7 @@ export default function AdminMatchResolver({ pendingPicks }: Props) {
   const [resolving, setResolving] = useState<string | null>(null);
   const supabase = createClient();
   const router   = useRouter();
+  const [, startTransition] = useTransition();
 
   // Solo mostrar partidos cuyos picks NO tienen marcador — los que ya tienen marcador
   // se resuelven directo desde la tarjeta individual con ✓ / ✗ / ✏️
@@ -90,7 +91,7 @@ export default function AdminMatchResolver({ pendingPicks }: Props) {
 
     setResolvedKeys((prev) => new Set(prev).add(match.key));
     setResolving(null);
-    router.refresh();
+    startTransition(() => router.refresh());
   }
 
   if (matches.length === 0) {

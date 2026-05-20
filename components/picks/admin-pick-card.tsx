@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase";
 import { Pick } from "@/lib/types";
@@ -30,6 +30,7 @@ export default function AdminPickCard({ pick }: Props) {
   const [awayScore, setAwayScore]   = useState(String(pick.away_score ?? ""));
   const supabase = createClient();
   const router   = useRouter();
+  const [, startTransition] = useTransition();
 
   async function updateStatus(newStatus: "correct" | "incorrect" | "pending") {
     setSaving(true);
@@ -38,7 +39,7 @@ export default function AdminPickCard({ pick }: Props) {
     setStatus(newStatus);
     if (newStatus === "pending") setEditScore(false);
     setSaving(false);
-    router.refresh();
+    startTransition(() => router.refresh());
   }
 
   async function saveScore() {
@@ -55,7 +56,7 @@ export default function AdminPickCard({ pick }: Props) {
     setStatus(newStatus);
     setEditScore(false);
     setSaving(false);
-    router.refresh();
+    startTransition(() => router.refresh());
   }
 
   const statusBadge = {
