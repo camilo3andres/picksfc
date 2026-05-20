@@ -57,7 +57,11 @@ export default function AdminMatchResolver({ pendingPicks }: Props) {
   const supabase = createClient();
   const router   = useRouter();
 
-  const matches = groupByMatch(pendingPicks).filter((m) => !resolvedKeys.has(m.key));
+  // Solo mostrar partidos cuyos picks NO tienen marcador — los que ya tienen marcador
+  // se resuelven directo desde la tarjeta individual con ✓ / ✗ / ✏️
+  const matches = groupByMatch(pendingPicks)
+    .filter((m) => !resolvedKeys.has(m.key))
+    .filter((m) => m.picks.every((p) => p.home_score === null));
 
   function setScore(key: string, side: "home" | "away", value: string) {
     setScores((prev) => ({
