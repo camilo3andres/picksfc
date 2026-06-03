@@ -40,6 +40,16 @@ function TeamBadge({ url, name, size = 24 }: { url: string | null; name: string;
   return <span className="flex-shrink-0 text-base">⚽</span>;
 }
 
+const COMPETITIONS = [
+  { code: "WC",  label: "🌍 Mundial 2026" },
+  { code: "CL",  label: "⭐ Champions League" },
+  { code: "PL",  label: "🦁 Premier League" },
+  { code: "PD",  label: "🇪🇸 La Liga" },
+  { code: "BL1", label: "🦅 Bundesliga" },
+  { code: "SA",  label: "🇮🇹 Serie A" },
+  { code: "FL1", label: "🇫🇷 Ligue 1" },
+];
+
 export default function MatchSelector({ onSelect, onClear }: Props) {
   const [query, setQuery]                   = useState("");
   const [selectedTeam, setSelectedTeam]     = useState<Team | null>(null);
@@ -47,6 +57,7 @@ export default function MatchSelector({ onSelect, onClear }: Props) {
   const [selectedMatch, setSelectedMatch]   = useState<ApiMatch | null>(null);
   const [loadingMatches, setLoadingMatches] = useState(false);
   const [focused, setFocused]               = useState(false);
+  const [activeComp, setActiveComp]         = useState<string | null>(null);
 
   const localResults = query.length >= 2 ? searchTeams(query) : [];
 
@@ -97,11 +108,23 @@ export default function MatchSelector({ onSelect, onClear }: Props) {
     });
   }
 
+  async function handleSelectCompetition(code: string, label: string) {
+    setActiveComp(code);
+    setSelectedTeam({ id: code, name: label, league: label, logo: null } as any);
+    setLoadingMatches(true);
+    setMatches([]);
+    const res  = await fetch(`/api/football/competition?code=${code}`);
+    const data = await res.json();
+    setMatches(data);
+    setLoadingMatches(false);
+  }
+
   function handleClear() {
     setSelectedMatch(null);
     setSelectedTeam(null);
     setMatches([]);
     setQuery("");
+    setActiveComp(null);
     onClear();
   }
 
@@ -233,8 +256,32 @@ export default function MatchSelector({ onSelect, onClear }: Props) {
   const showEmpty    = focused && query.length >= 2 && localResults.length === 0;
 
   return (
-    <div className="space-y-1.5">
-      <label className="text-sm font-semibold" style={{ color: "#8fa8cc" }}>Buscar equipo</label>
+    <div className="space-y-2">
+      {/* Acceso rápido por competición */}
+      <div>
+        <p className="text-xs font-semibold mb-1.5" style={{ color: "#4a6080" }}>Acceso rápido</p>
+        <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
+          {COMPETITIONS.map((comp) => (
+            <button
+              key={comp.code}
+              type="button"
+              onClick={() => handleSelectCompetition(comp.code, comp.label)}
+              className="flex-shrink-0 text-xs font-bold px-3 py-1.5 rounded-full transition-all"
+              style={{
+                background: "rgba(255,255,255,0.05)",
+                color: "#8fa8cc",
+                border: "1px solid rgba(255,255,255,0.09)",
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(34,197,94,0.10)"; e.currentTarget.style.color = "#4ade80"; e.currentTarget.style.borderColor = "rgba(34,197,94,0.25)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; e.currentTarget.style.color = "#8fa8cc"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.09)"; }}
+            >
+              {comp.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <label className="text-sm font-semibold" style={{ color: "#8fa8cc" }}>O buscá un equipo</label>
       <div className="relative">
         <input
           type="text"

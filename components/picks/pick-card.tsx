@@ -47,6 +47,8 @@ const LEAGUE_STYLE: Record<string, { color: string; bg: string; border: string }
   "Serie A":                { color: "#60a5fa", bg: "rgba(29,78,216,0.12)",  border: "rgba(96,165,250,0.25)" },
   "Ligue 1":                { color: "#38bdf8", bg: "rgba(14,165,233,0.12)", border: "rgba(56,189,248,0.25)" },
   "Liga Dimayor":           { color: "#4ade80", bg: "rgba(22,163,74,0.12)",  border: "rgba(74,222,128,0.25)" },
+  "FIFA World Cup":         { color: "#fbbf24", bg: "rgba(251,191,36,0.12)", border: "rgba(251,191,36,0.25)" },
+  "UEFA Champions League 2024/25": { color: "#93c5fd", bg: "rgba(37,99,235,0.12)", border: "rgba(59,130,246,0.25)" },
 };
 
 const STATUS_CONFIG = {

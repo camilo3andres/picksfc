@@ -15,9 +15,10 @@ type Props = {
   followingIds: string[];
 };
 
-const LEAGUES = ["UEFA Champions League", "UEFA Europa League", "UEFA Conference League", "Premier League", "La Liga", "Bundesliga", "Serie A", "Ligue 1", "Liga Dimayor"];
+const LEAGUES = ["FIFA World Cup", "UEFA Champions League", "UEFA Europa League", "UEFA Conference League", "Premier League", "La Liga", "Bundesliga", "Serie A", "Ligue 1", "Liga Dimayor"];
 
 const LEAGUE_ICON: Record<string, string> = {
+  "FIFA World Cup":         "🌍",
   "UEFA Champions League":  "⭐",
   "UEFA Europa League":     "🟠",
   "UEFA Conference League": "🔵",
