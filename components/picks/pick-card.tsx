@@ -310,7 +310,7 @@ export default function PickCard({ pick, currentUserId, userLiked, defaultShowCo
       {/* Razonamiento */}
       {pick.reasoning && (
         <div className="px-4 mb-3">
-          <p className="text-sm leading-relaxed pl-3 italic"
+          <p className="text-sm leading-relaxed pl-3"
             style={{ color: "#6b87ab", borderLeft: "2px solid rgba(255,255,255,0.08)" }}>
             "{pick.reasoning}"
           </p>
