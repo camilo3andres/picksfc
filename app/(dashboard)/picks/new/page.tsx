@@ -143,7 +143,7 @@ export default function NewPickPage() {
               {predInfo ? (
                 <span className="px-4 py-1 rounded-full text-xs font-black"
                   style={{ background: predInfo.gradient, color: "#fff", boxShadow: `0 2px 10px ${predInfo.shadow}` }}>
-                  {predInfo.emoji} {predInfo.label}
+                  {predInfo.label}
                 </span>
               ) : (
                 <span className="font-black text-sm" style={{ color: "#1e3050", letterSpacing: "0.15em" }}>VS</span>
