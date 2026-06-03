@@ -300,7 +300,17 @@ export default function MatchSelector({ onSelect, onClear }: Props) {
             style={{ ...dropdownStyle, maxHeight: "260px", overflowY: "auto", animation: "dropdownIn 0.18s ease-out forwards" }}
           >
             {showEmpty ? (
-              <div className="px-4 py-3 text-sm" style={{ color: "#4a6080" }}>No encontrado en la lista.</div>
+              <div className="px-4 py-3 space-y-2">
+                <p className="text-sm" style={{ color: "#4a6080" }}>No encontrado en equipos de liga.</p>
+                <button
+                  type="button"
+                  onMouseDown={() => handleSelectCompetition("WC", "🌍 Mundial 2026")}
+                  className="w-full text-left text-xs font-bold px-3 py-2 rounded-lg transition-all"
+                  style={{ background: "rgba(251,191,36,0.10)", color: "#fbbf24", border: "1px solid rgba(251,191,36,0.25)" }}
+                >
+                  🌍 ¿Es una selección? Ver partidos del Mundial 2026 →
+                </button>
+              </div>
             ) : (
               localResults.map((team) => (
                 <button
