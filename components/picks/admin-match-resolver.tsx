@@ -50,6 +50,12 @@ function getResult(home: number, away: number): "home" | "draw" | "away" {
   return "draw";
 }
 
+function isCorrect(prediction: string, result: "home" | "draw" | "away"): boolean {
+  if (prediction === "home_draw") return result === "home" || result === "draw";
+  if (prediction === "away_draw") return result === "away" || result === "draw";
+  return prediction === result;
+}
+
 export default function AdminMatchResolver({ pendingPicks }: Props) {
   const [resolvedKeys, setResolvedKeys] = useState<Set<string>>(new Set());
   const [scores, setScores] = useState<Record<string, { home: string; away: string }>>({});
@@ -83,7 +89,7 @@ export default function AdminMatchResolver({ pendingPicks }: Props) {
 
     for (const pick of match.picks) {
       await supabase.from("picks").update({
-        status: pick.prediction === result ? "correct" : "incorrect",
+        status: isCorrect(pick.prediction, result) ? "correct" : "incorrect",
         home_score: homeScore,
         away_score: awayScore,
       }).eq("id", pick.id);
@@ -172,7 +178,7 @@ export default function AdminMatchResolver({ pendingPicks }: Props) {
             <div className="flex flex-wrap gap-1.5">
               {match.picks.map((p) => (
                 <span key={p.id} className="text-xs px-2 py-0.5 rounded-lg font-semibold" style={{ background: "rgba(255,255,255,0.05)", color: "#6b87ab" }}>
-                  @{p.profiles.username} → {p.prediction === "home" ? "Local" : p.prediction === "away" ? "Visitante" : "Empate"}
+                  @{p.profiles.username} → {{ home: "Local", draw: "Empate", away: "Visitante", home_draw: "Local o Empate", away_draw: "Visit. o Empate" }[p.prediction] ?? p.prediction}
                 </span>
               ))}
             </div>
