@@ -7,7 +7,7 @@ export default async function FeedPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  const picksQuery = supabase.from("picks").select("*, profiles(username)").order("created_at", { ascending: false });
+  const picksQuery = supabase.from("picks").select("*, profiles(username, is_verified)").order("created_at", { ascending: false });
   const [{ data: picks }, { data: userLikes }, { data: followingData }] = await Promise.all([
     picksQuery,
     user ? supabase.from("likes").select("pick_id").eq("user_id", user.id) : Promise.resolve({ data: [] }),

@@ -9,15 +9,22 @@ import Image from "next/image";
 import { createClient } from "@/lib/supabase";
 import MatchSelector, { type SelectedMatch } from "@/components/picks/match-selector";
 
-const PREDICTIONS = [
-  { value: "home", label: "Local",     emoji: "🏠", gradient: "linear-gradient(135deg, #2563eb, #1d4ed8)", shadow: "rgba(37,99,235,0.35)" },
-  { value: "draw", label: "Empate",    emoji: "🤝", gradient: "linear-gradient(135deg, #d97706, #b45309)", shadow: "rgba(217,119,6,0.35)" },
-  { value: "away", label: "Visitante", emoji: "✈️", gradient: "linear-gradient(135deg, #7c3aed, #6d28d9)", shadow: "rgba(124,58,237,0.35)" },
+const PREDICTIONS_ROW1 = [
+  { value: "home", label: "Gana Local",     gradient: "linear-gradient(135deg, #2563eb, #1d4ed8)", shadow: "rgba(37,99,235,0.35)" },
+  { value: "draw", label: "Empate",          gradient: "linear-gradient(135deg, #d97706, #b45309)", shadow: "rgba(217,119,6,0.35)" },
+  { value: "away", label: "Gana Visitante",  gradient: "linear-gradient(135deg, #7c3aed, #6d28d9)", shadow: "rgba(124,58,237,0.35)" },
 ] as const;
+
+const PREDICTIONS_ROW2 = [
+  { value: "home_draw", label: "Local o Empate",     gradient: "linear-gradient(135deg, #0891b2, #0e7490)", shadow: "rgba(8,145,178,0.35)" },
+  { value: "away_draw", label: "Visitante o Empate", gradient: "linear-gradient(135deg, #059669, #047857)", shadow: "rgba(5,150,105,0.35)" },
+] as const;
+
+const PREDICTIONS = [...PREDICTIONS_ROW1, ...PREDICTIONS_ROW2];
 
 const pickSchema = z.object({
   league:     z.string().min(1, "Seleccioná un partido"),
-  prediction: z.enum(["home", "draw", "away"]),
+  prediction: z.enum(["home", "draw", "away", "home_draw", "away_draw"]),
   match_date: z.string().min(1, "Seleccioná un partido"),
   reasoning:  z.string().max(500, "Máximo 500 caracteres").optional(),
 });
@@ -95,7 +102,7 @@ export default function NewPickPage() {
     router.refresh();
   }
 
-  const predInfo = PREDICTIONS.find(p => p.value === selectedPrediction);
+  const predInfo = PREDICTIONS.find((p) => p.value === selectedPrediction);
 
   return (
     <div className="max-w-xl mx-auto">
@@ -175,33 +182,62 @@ export default function NewPickPage() {
 
         {/* Predicción */}
         <div className="space-y-1.5">
-          <label className="text-sm font-semibold" style={{ color: "#8fa8cc" }}>Tu pronóstico</label>
-          <div className="grid grid-cols-3 gap-2">
-            {PREDICTIONS.map((opt) => {
-              const active = selectedPrediction === opt.value;
-              return (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => setValue("prediction", opt.value)}
-                  className="py-3 rounded-xl text-sm font-black transition-all"
-                  style={active ? {
-                    background:  opt.gradient,
-                    color:       "#fff",
-                    boxShadow:   `0 4px 16px ${opt.shadow}`,
-                    transform:   "scale(1.03)",
-                    border:      "1px solid transparent",
-                  } : {
-                    background:  "rgba(255,255,255,0.04)",
-                    color:       "#4a6080",
-                    border:      "1px solid rgba(255,255,255,0.08)",
-                    transform:   "scale(1)",
-                  }}
-                >
-                  {opt.emoji} {opt.label}
-                </button>
-              );
-            })}
+          <label className="text-sm font-semibold" style={{ color: "#8fa8cc" }}>¿Quién va a ganar?</label>
+          <div className="space-y-2">
+            <div className="grid grid-cols-3 gap-2">
+              {PREDICTIONS_ROW1.map((opt) => {
+                const active = selectedPrediction === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setValue("prediction", opt.value)}
+                    className="py-3 rounded-xl text-sm font-black transition-all"
+                    style={active ? {
+                      background: opt.gradient,
+                      color:      "#fff",
+                      boxShadow:  `0 4px 16px ${opt.shadow}`,
+                      transform:  "scale(1.03)",
+                      border:     "1px solid transparent",
+                    } : {
+                      background: "rgba(255,255,255,0.04)",
+                      color:      "#4a6080",
+                      border:     "1px solid rgba(255,255,255,0.08)",
+                      transform:  "scale(1)",
+                    }}
+                  >
+                    {opt.label}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {PREDICTIONS_ROW2.map((opt) => {
+                const active = selectedPrediction === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setValue("prediction", opt.value)}
+                    className="py-2.5 rounded-xl text-sm font-black transition-all"
+                    style={active ? {
+                      background: opt.gradient,
+                      color:      "#fff",
+                      boxShadow:  `0 4px 16px ${opt.shadow}`,
+                      transform:  "scale(1.03)",
+                      border:     "1px solid transparent",
+                    } : {
+                      background: "rgba(255,255,255,0.04)",
+                      color:      "#4a6080",
+                      border:     "1px solid rgba(255,255,255,0.08)",
+                      transform:  "scale(1)",
+                    }}
+                  >
+                    {opt.label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
           {errors.prediction && <p className="text-red-400 text-xs">{errors.prediction.message}</p>}
         </div>
@@ -209,10 +245,10 @@ export default function NewPickPage() {
         {/* Análisis */}
         <div className="space-y-1.5">
           <label className="text-sm font-semibold" style={{ color: "#8fa8cc" }}>
-            Análisis <span style={{ color: "#2e4060", fontWeight: 400 }}>(opcional)</span>
+            ¿Qué más va a pasar? <span style={{ color: "#2e4060", fontWeight: 400 }}>(opcional)</span>
           </label>
           <textarea
-            placeholder="¿Por qué apostás a este resultado? Compartí tu análisis..."
+            placeholder="Ej: +2.5 goles, más de 9 esquinas, ambos anotan... compartí tu análisis"
             rows={3}
             className="w-full text-sm outline-none rounded-xl px-3 py-2.5 resize-none transition-all placeholder:text-[#4a6080]"
             style={{

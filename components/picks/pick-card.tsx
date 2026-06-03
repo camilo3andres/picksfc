@@ -8,23 +8,33 @@ import { createClient } from "@/lib/supabase";
 import { Pick } from "@/lib/types";
 import { getAvatarColor } from "@/lib/utils";
 import CommentsSection from "./comments-section";
+import VerifiedBadge from "@/components/ui/verified-badge";
 
 type Props = {
-  pick: Pick & { profiles: { username: string } };
+  pick: Pick & { profiles: { username: string; is_verified?: boolean } };
   currentUserId: string | null;
   userLiked: boolean;
   defaultShowComments?: boolean;
   isFollowing?: boolean;
+  streak?: number;
   onFollowChange?: (userId: string, nowFollowing: boolean) => void;
   onDelete?: (pickId: string) => void;
 };
 
-const PREDICTION_LABEL = { home: "Local", draw: "Empate", away: "Visitante" };
+const PREDICTION_LABEL = {
+  home:      "Gana Local",
+  draw:      "Empate",
+  away:      "Gana Visitante",
+  home_draw: "Local o Empate",
+  away_draw: "Visitante o Empate",
+};
 
 const PREDICTION_STYLE = {
-  home: { background: "linear-gradient(135deg, #2563eb, #1d4ed8)", color: "#fff", border: "1px solid rgba(96,165,250,0.3)", boxShadow: "0 2px 12px rgba(37,99,235,0.35)" },
-  draw: { background: "linear-gradient(135deg, #d97706, #b45309)", color: "#fff", border: "1px solid rgba(251,191,36,0.3)", boxShadow: "0 2px 12px rgba(217,119,6,0.35)" },
-  away: { background: "linear-gradient(135deg, #7c3aed, #6d28d9)", color: "#fff", border: "1px solid rgba(167,139,250,0.3)", boxShadow: "0 2px 12px rgba(124,58,237,0.35)" },
+  home:      { background: "linear-gradient(135deg, #2563eb, #1d4ed8)", color: "#fff", border: "1px solid rgba(96,165,250,0.3)",   boxShadow: "0 2px 12px rgba(37,99,235,0.35)"  },
+  draw:      { background: "linear-gradient(135deg, #d97706, #b45309)", color: "#fff", border: "1px solid rgba(251,191,36,0.3)",   boxShadow: "0 2px 12px rgba(217,119,6,0.35)"   },
+  away:      { background: "linear-gradient(135deg, #7c3aed, #6d28d9)", color: "#fff", border: "1px solid rgba(167,139,250,0.3)", boxShadow: "0 2px 12px rgba(124,58,237,0.35)"  },
+  home_draw: { background: "linear-gradient(135deg, #0891b2, #0e7490)", color: "#fff", border: "1px solid rgba(34,211,238,0.3)",   boxShadow: "0 2px 12px rgba(8,145,178,0.35)"   },
+  away_draw: { background: "linear-gradient(135deg, #059669, #047857)", color: "#fff", border: "1px solid rgba(52,211,153,0.3)",   boxShadow: "0 2px 12px rgba(5,150,105,0.35)"   },
 };
 
 const LEAGUE_STYLE: Record<string, { color: string; bg: string; border: string }> = {
@@ -60,13 +70,14 @@ const STATUS_CONFIG = {
   },
 };
 
-export default function PickCard({ pick, currentUserId, userLiked, defaultShowComments = false, isFollowing: initialIsFollowing, onFollowChange, onDelete }: Props) {
+export default function PickCard({ pick, currentUserId, userLiked, defaultShowComments = false, isFollowing: initialIsFollowing, streak = 0, onFollowChange, onDelete }: Props) {
   const [liked, setLiked]               = useState(userLiked);
   const [likesCount, setLikesCount]     = useState(pick.likes_count);
   const [commentsCount, setCommentsCount] = useState(pick.comments_count);
   const [animating, setAnimating]       = useState(false);
   const [showComments, setShowComments] = useState(defaultShowComments);
   const [following, setFollowing]       = useState(initialIsFollowing ?? false);
+  const [copied, setCopied]             = useState(false);
   useEffect(() => { setFollowing(initialIsFollowing ?? false); }, [initialIsFollowing]);
   const [followAnim, setFollowAnim]     = useState(false);
   const router = useRouter();
@@ -89,6 +100,17 @@ export default function PickCard({ pick, currentUserId, userLiked, defaultShowCo
       onFollowChange?.(pick.user_id, data.following);
     }
     router.refresh();
+  }
+
+  async function handleShare() {
+    const url = `${window.location.origin}/picks/${pick.id}`;
+    if (navigator.share) {
+      await navigator.share({ title: `Pick de @${pick.profiles.username} en PicksFC`, url });
+    } else {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
   }
 
   async function handleDelete() {
@@ -142,7 +164,15 @@ export default function PickCard({ pick, currentUserId, userLiked, defaultShowCo
             {pick.profiles.username[0].toUpperCase()}
           </div>
           <div className="min-w-0">
-            <span className="text-white text-sm font-bold">@{pick.profiles.username}</span>
+            <span className="inline-flex items-center gap-1.5 text-white text-sm font-bold">
+              @{pick.profiles.username}
+              {pick.profiles.is_verified && <VerifiedBadge size={15} />}
+              {streak >= 3 && (
+                <span className="text-xs px-1.5 py-0.5 rounded-full font-bold" style={{ background: "rgba(251,191,36,0.15)", color: "#fbbf24", border: "1px solid rgba(251,191,36,0.25)" }}>
+                  🔥 {streak}
+                </span>
+              )}
+            </span>
             <div className="flex items-center flex-wrap gap-x-2 gap-y-1">
               <Link href={`/profile/${pick.profiles.username}`} className="text-green-400/70 hover:text-green-400 text-xs transition-colors leading-tight">
                 Ver perfil →
@@ -345,6 +375,16 @@ export default function PickCard({ pick, currentUserId, userLiked, defaultShowCo
             🗑 Borrar
           </button>
         )}
+
+        <button
+          onClick={handleShare}
+          className="text-xs font-semibold px-2.5 py-1 rounded-lg transition-all"
+          style={{ color: copied ? "#4ade80" : "#6b87ab", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}
+          onMouseEnter={(e) => { if (!copied) { e.currentTarget.style.color = "#8fa8cc"; e.currentTarget.style.background = "rgba(255,255,255,0.06)"; } }}
+          onMouseLeave={(e) => { if (!copied) { e.currentTarget.style.color = "#6b87ab"; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; } }}
+        >
+          {copied ? "✓ Copiado" : "🔗 Compartir"}
+        </button>
 
         <Link
           href={`/picks/${pick.id}`}

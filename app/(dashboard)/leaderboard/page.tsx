@@ -4,12 +4,14 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase";
 import { getAvatarColor } from "@/lib/utils";
+import VerifiedBadge from "@/components/ui/verified-badge";
 
 type Profile = {
   username: string;
   total_picks: number;
   correct_picks: number;
   accuracy: number;
+  is_verified?: boolean;
 };
 
 const MEDAL = ["🥇", "🥈", "🥉"];
@@ -28,7 +30,7 @@ export default function LeaderboardPage() {
       const supabase = createClient();
       const { data } = await supabase
         .from("profiles")
-        .select("username, total_picks, correct_picks");
+        .select("username, total_picks, correct_picks, is_verified");
 
       const result = (data ?? [])
         .map((p) => ({
@@ -109,7 +111,10 @@ export default function LeaderboardPage() {
 
                   {/* Info */}
                   <div className="flex-1 min-w-0">
-                    <p className="font-black text-sm" style={{ color: "#f0f6ff" }}>@{profile.username}</p>
+                    <p className="font-black text-sm inline-flex items-center gap-1" style={{ color: "#f0f6ff" }}>
+                      @{profile.username}
+                      {profile.is_verified && <VerifiedBadge size={14} />}
+                    </p>
                     <p className="text-xs mt-0.5" style={{ color: "#5a7a9a" }}>
                       {profile.correct_picks} correctos de {profile.total_picks} picks
                     </p>

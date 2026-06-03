@@ -28,11 +28,6 @@ const LEAGUE_ICON: Record<string, string> = {
   "Ligue 1":                "🇫🇷",
   "Liga Dimayor":           "🇨🇴",
 };
-const STATUSES = [
-  { value: "pending",   label: "⏳ Pendientes" },
-  { value: "correct",   label: "✅ Correctos" },
-  { value: "incorrect", label: "❌ Incorrectos" },
-];
 
 const WEEKDAY_ES = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"];
 
@@ -59,7 +54,6 @@ export default function FeedList({ initialPicks, initialLikedIds, currentUserId,
   const DATE_RANGE = buildDateRange();
   const [picks, setPicks] = useState<PickWithProfile[]>(initialPicks);
   const [league, setLeague] = useState<string | null>(null);
-  const [status, setStatus] = useState<string | null>(null);
   const [dateFilter, setDateFilter] = useState<string | null>(null);
   const [feedTab, setFeedTab] = useState<"all" | "following">("all");
   const [followingIds, setFollowingIds] = useState<string[]>(initialFollowingIds);
@@ -109,55 +103,61 @@ export default function FeedList({ initialPicks, initialLikedIds, currentUserId,
     };
   }, []);
 
+  // Racha por usuario: picks resueltos consecutivos más recientes
+  const streakMap: Record<string, number> = {};
+  const byUser: Record<string, PickWithProfile[]> = {};
+  for (const p of picks) {
+    if (!byUser[p.user_id]) byUser[p.user_id] = [];
+    byUser[p.user_id].push(p);
+  }
+  for (const [userId, userPicks] of Object.entries(byUser)) {
+    const sorted = [...userPicks]
+      .filter((p) => p.status !== "pending")
+      .sort((a, b) => b.created_at.localeCompare(a.created_at));
+    let streak = 0;
+    for (const p of sorted) {
+      if (p.status === "correct") streak++;
+      else break;
+    }
+    streakMap[userId] = streak;
+  }
+
   const followingSet = new Set(followingIds);
   const filtered = picks.filter((p) => {
     if (feedTab === "following" && !followingSet.has(p.user_id)) return false;
     if (league && p.league !== league) return false;
-    if (status && p.status !== status) return false;
     if (dateFilter && p.match_date.split("T")[0] !== dateFilter) return false;
     return true;
   });
 
   return (
-    <div className="space-y-4">
-      {/* Stats rápidas */}
-      <div className="grid grid-cols-4 gap-2">
-        {[
-          { label: "Total",       value: picks.length,                                              color: "#8fa8cc" },
-          { label: "Correctos",   value: picks.filter(p => p.status === "correct").length,          color: "#4ade80" },
-          { label: "Incorrectos", value: picks.filter(p => p.status === "incorrect").length,        color: "#f87171" },
-          { label: "Pendientes",  value: picks.filter(p => p.status === "pending").length,          color: "#fbbf24" },
-        ].map(({ label, value, color }) => (
-          <div key={label} className="rounded-xl px-3 py-2.5 text-center" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
-            <p className="text-lg font-black" style={{ color }}>{value}</p>
-            <p className="text-xs font-medium" style={{ color: "#3a5070" }}>{label}</p>
-          </div>
-        ))}
-      </div>
+    <div className="space-y-3">
 
-      {/* Toggle Siguiendo — solo para usuarios con sesión */}
-      {currentUserId && <div>
-        <button
-          onClick={() => setFeedTab(feedTab === "following" ? "all" : "following")}
-          className="text-sm font-bold px-4 py-1.5 rounded-xl transition-all"
-          style={feedTab === "following" ? {
-            background: "linear-gradient(135deg, #22c55e, #16a34a)",
-            color: "#fff",
-            boxShadow: "0 4px 12px rgba(34,197,94,0.25)",
-            border: "1px solid transparent",
-          } : {
-            background: "rgba(255,255,255,0.04)",
-            color: "#6b87ab",
-            border: "1px solid rgba(255,255,255,0.08)",
-          }}
-        >
-          👥 Siguiendo
-        </button>
-      </div>}
+      {/* Fila 1: Siguiendo */}
+      {currentUserId && (
+        <div>
+          <button
+            onClick={() => setFeedTab(feedTab === "following" ? "all" : "following")}
+            className="text-xs font-bold px-3 py-1.5 rounded-xl transition-all"
+            style={feedTab === "following" ? {
+              background: "linear-gradient(135deg, #22c55e, #16a34a)",
+              color: "#fff",
+              boxShadow: "0 2px 10px rgba(34,197,94,0.28)",
+              border: "1px solid transparent",
+            } : {
+              background: "rgba(255,255,255,0.04)",
+              color: "#6b87ab",
+              border: "1px solid rgba(255,255,255,0.08)",
+            }}
+          >
+            👥 Siguiendo
+          </button>
+        </div>
+      )}
 
-      {/* Filtro por fecha */}
+      {/* Fila 2: Fecha */}
       <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
-        {[{ iso: null, label: "Todos" }, ...DATE_RANGE].map(({ iso, label }) => {
+        {DATE_RANGE.map(({ iso, label }) => {
           const active = dateFilter === iso;
           const isToday = iso === getDateDays(0);
           return (
@@ -182,16 +182,16 @@ export default function FeedList({ initialPicks, initialLikedIds, currentUserId,
         })}
       </div>
 
-      {/* Filtro por liga */}
-      <div className="flex flex-wrap gap-1.5">
-        {["Todas", ...LEAGUES].map((l) => {
-          const active = l === "Todas" ? league === null : league === l;
-          const icon = l === "Todas" ? "⚽" : LEAGUE_ICON[l];
+      {/* Fila 3: Liga (scroll horizontal) */}
+      <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
+        {LEAGUES.map((l) => {
+          const active = league === l;
+          const icon = LEAGUE_ICON[l];
           return (
             <button
               key={l}
-              onClick={() => setLeague(l === "Todas" ? null : (league === l ? null : l))}
-              className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full transition-all duration-200"
+              onClick={() => setLeague(active ? null : l)}
+              className="flex-shrink-0 flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full transition-all duration-200"
               style={active ? {
                 background: "linear-gradient(135deg, #22c55e, #16a34a)",
                 color: "#fff",
@@ -205,31 +205,6 @@ export default function FeedList({ initialPicks, initialLikedIds, currentUserId,
             >
               <span>{icon}</span>
               <span>{l}</span>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Filtro por estado */}
-      <div className="flex flex-wrap gap-2">
-        {[{ value: null, label: "⚽ Todos" }, ...STATUSES.map(s => ({ value: s.value, label: s.label }))].map((s) => {
-          const active = status === s.value;
-          return (
-            <button
-              key={String(s.value)}
-              onClick={() => setStatus(active ? null : s.value)}
-              className="text-xs font-bold px-3 py-1.5 rounded-full transition-all duration-200"
-              style={active ? {
-                background: "rgba(255,255,255,0.10)",
-                color: "#f0f6ff",
-                border: "1px solid rgba(255,255,255,0.16)",
-              } : {
-                background: "rgba(255,255,255,0.03)",
-                color: "#4a6080",
-                border: "1px solid rgba(255,255,255,0.05)",
-              }}
-            >
-              {s.label}
             </button>
           );
         })}
@@ -253,7 +228,7 @@ export default function FeedList({ initialPicks, initialLikedIds, currentUserId,
               <p className="text-3xl mb-3">🔍</p>
               <p className="font-medium" style={{ color: "#4a6080" }}>No hay picks con estos filtros</p>
               <button
-                onClick={() => { setLeague(null); setStatus(null); setDateFilter(null); }}
+                onClick={() => { setLeague(null); setDateFilter(null); setFeedTab("all"); }}
                 className="mt-3 text-sm transition-colors"
                 style={{ color: "#22c55e" }}
               >
@@ -271,6 +246,7 @@ export default function FeedList({ initialPicks, initialLikedIds, currentUserId,
               currentUserId={currentUserId}
               userLiked={initialLikedIds.includes(pick.id)}
               isFollowing={followingIds.includes(pick.user_id)}
+              streak={streakMap[pick.user_id] ?? 0}
               onFollowChange={(userId, nowFollowing) => {
                 setFollowingIds((prev) =>
                   nowFollowing ? [...prev, userId] : prev.filter((id) => id !== userId)

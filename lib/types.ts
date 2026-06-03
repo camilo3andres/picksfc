@@ -5,6 +5,7 @@ export type Profile = {
   bio: string | null;
   total_picks: number;
   correct_picks: number;
+  is_verified: boolean;
   created_at: string;
 };
 
@@ -14,7 +15,7 @@ export type Pick = {
   home_team: string;
   away_team: string;
   league: string;
-  prediction: "home" | "draw" | "away";
+  prediction: "home" | "draw" | "away" | "home_draw" | "away_draw";
   reasoning: string | null;
   match_date: string;
   status: "pending" | "correct" | "incorrect";

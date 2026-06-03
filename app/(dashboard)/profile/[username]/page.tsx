@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase-server";
 import PickCard from "@/components/picks/pick-card";
 import FollowButton from "@/components/profile/follow-button";
+import VerifiedBadge from "@/components/ui/verified-badge";
 import { getAvatarColor } from "@/lib/utils";
 
 type Props = {
@@ -25,7 +26,7 @@ export default async function ProfilePage({ params }: Props) {
 
   const { data: picks } = await supabase
     .from("picks")
-    .select("*, profiles(username)")
+    .select("*, profiles(username, is_verified)")
     .eq("user_id", profile.id)
     .order("created_at", { ascending: false });
 
@@ -108,7 +109,10 @@ export default async function ProfilePage({ params }: Props) {
             <div className="pb-1 flex-1">
               <div className="flex items-center justify-between gap-2 flex-wrap">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h1 className="text-xl font-black" style={{ color: "#f0f6ff" }}>@{profile.username}</h1>
+                  <h1 className="text-xl font-black inline-flex items-center gap-1.5" style={{ color: "#f0f6ff" }}>
+                    @{profile.username}
+                    {profile.is_verified && <VerifiedBadge size={18} />}
+                  </h1>
                   {streak >= 3 && (
                     <span className="text-xs font-bold px-2 py-0.5 rounded-full"
                       style={{ background: "rgba(251,191,36,0.15)", color: "#fbbf24", border: "1px solid rgba(251,191,36,0.30)" }}>

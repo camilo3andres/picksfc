@@ -9,17 +9,31 @@ type Props = {
   pick: Pick & { profiles: { username: string } };
 };
 
-const PREDICTION_LABEL = { home: "Local", draw: "Empate", away: "Visitante" };
+const PREDICTION_LABEL = {
+  home:      "Gana Local",
+  draw:      "Empate",
+  away:      "Gana Visitante",
+  home_draw: "Local o Empate",
+  away_draw: "Visitante o Empate",
+};
 const PREDICTION_STYLE = {
-  home: { background: "linear-gradient(135deg, #2563eb, #1d4ed8)", color: "#fff" },
-  draw: { background: "linear-gradient(135deg, #d97706, #b45309)", color: "#fff" },
-  away: { background: "linear-gradient(135deg, #7c3aed, #6d28d9)", color: "#fff" },
+  home:      { background: "linear-gradient(135deg, #2563eb, #1d4ed8)", color: "#fff" },
+  draw:      { background: "linear-gradient(135deg, #d97706, #b45309)", color: "#fff" },
+  away:      { background: "linear-gradient(135deg, #7c3aed, #6d28d9)", color: "#fff" },
+  home_draw: { background: "linear-gradient(135deg, #0891b2, #0e7490)", color: "#fff" },
+  away_draw: { background: "linear-gradient(135deg, #059669, #047857)", color: "#fff" },
 };
 
 function getResult(home: number, away: number): "home" | "draw" | "away" {
   if (home > away) return "home";
   if (home < away) return "away";
   return "draw";
+}
+
+function isCorrectPrediction(prediction: string, result: "home" | "draw" | "away"): boolean {
+  if (prediction === "home_draw") return result === "home" || result === "draw";
+  if (prediction === "away_draw") return result === "away" || result === "draw";
+  return prediction === result;
 }
 
 export default function AdminPickCard({ pick }: Props) {
@@ -31,6 +45,16 @@ export default function AdminPickCard({ pick }: Props) {
   const supabase = createClient();
   const router   = useRouter();
   const [, startTransition] = useTransition();
+
+  const [deleted, setDeleted] = useState(false);
+
+  async function deletePick() {
+    if (!confirm(`¿Eliminar este pick de @${pick.profiles.username}?`)) return;
+    setSaving(true);
+    await supabase.from("picks").delete().eq("id", pick.id);
+    setDeleted(true);
+    startTransition(() => router.refresh());
+  }
 
   async function updateStatus(newStatus: "correct" | "incorrect" | "pending") {
     setSaving(true);
@@ -47,7 +71,7 @@ export default function AdminPickCard({ pick }: Props) {
     const a = parseInt(awayScore);
     if (isNaN(h) || isNaN(a)) return;
     setSaving(true);
-    const newStatus = pick.prediction === getResult(h, a) ? "correct" : "incorrect";
+    const newStatus = isCorrectPrediction(pick.prediction, getResult(h, a)) ? "correct" : "incorrect";
     await supabase.from("picks").update({
       home_score: h,
       away_score: a,
@@ -67,6 +91,8 @@ export default function AdminPickCard({ pick }: Props) {
 
   const hasScore = pick.home_score !== null && pick.away_score !== null;
 
+  if (deleted) return null;
+
   return (
     <div className="rounded-2xl p-4 space-y-3" style={{
       background: "linear-gradient(160deg, #1f2f48 0%, #182438 100%)",
@@ -80,9 +106,20 @@ export default function AdminPickCard({ pick }: Props) {
             {pick.league}
           </span>
         </div>
-        <span className="text-xs px-2.5 py-1 rounded-full font-bold" style={statusBadge.style}>
-          {statusBadge.label}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs px-2.5 py-1 rounded-full font-bold" style={statusBadge.style}>
+            {statusBadge.label}
+          </span>
+          <button
+            onClick={deletePick}
+            disabled={saving}
+            className="w-6 h-6 rounded-full flex items-center justify-center text-xs transition-all disabled:opacity-40"
+            title="Eliminar pick"
+            style={{ background: "rgba(248,113,113,0.10)", color: "#f87171", border: "1px solid rgba(248,113,113,0.20)" }}
+          >
+            🗑
+          </button>
+        </div>
       </div>
 
       {/* Partido + marcador actual */}
@@ -156,44 +193,27 @@ export default function AdminPickCard({ pick }: Props) {
         </div>
       )}
 
-      {/* Botones */}
-      <div className="flex gap-2 pt-1" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-        <button
-          disabled={saving || status === "correct"}
-          onClick={() => updateStatus("correct")}
-          className="flex-1 py-2 rounded-xl text-xs font-black transition-all disabled:opacity-40"
-          style={{ background: status === "correct" ? "rgba(74,222,128,0.20)" : "rgba(74,222,128,0.10)", color: "#4ade80", border: "1px solid rgba(74,222,128,0.25)" }}
-        >
-          ✓ Correcto
-        </button>
-        <button
-          disabled={saving || status === "incorrect"}
-          onClick={() => updateStatus("incorrect")}
-          className="flex-1 py-2 rounded-xl text-xs font-black transition-all disabled:opacity-40"
-          style={{ background: status === "incorrect" ? "rgba(248,113,113,0.20)" : "rgba(248,113,113,0.10)", color: "#f87171", border: "1px solid rgba(248,113,113,0.25)" }}
-        >
-          ✗ Incorrecto
-        </button>
-        {status !== "pending" && (
+      {/* Botones — solo para picks pendientes */}
+      {status === "pending" && (
+        <div className="flex gap-2 pt-1" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
           <button
             disabled={saving}
-            onClick={() => updateStatus("pending")}
-            className="px-3 py-2 rounded-xl text-xs font-semibold transition-all disabled:opacity-40"
-            style={{ background: "rgba(255,255,255,0.04)", color: "#4a6080", border: "1px solid rgba(255,255,255,0.08)" }}
+            onClick={() => updateStatus("correct")}
+            className="flex-1 py-2 rounded-xl text-xs font-black transition-all disabled:opacity-40"
+            style={{ background: "rgba(74,222,128,0.10)", color: "#4ade80", border: "1px solid rgba(74,222,128,0.25)" }}
           >
-            Reset
+            ✓ Correcto
           </button>
-        )}
-        {hasScore && (
           <button
-            onClick={() => setEditScore((v) => !v)}
-            className="px-3 py-2 rounded-xl text-xs font-semibold transition-all"
-            style={{ background: editScore ? "rgba(251,191,36,0.15)" : "rgba(255,255,255,0.04)", color: editScore ? "#fbbf24" : "#4a6080", border: `1px solid ${editScore ? "rgba(251,191,36,0.30)" : "rgba(255,255,255,0.08)"}` }}
+            disabled={saving}
+            onClick={() => updateStatus("incorrect")}
+            className="flex-1 py-2 rounded-xl text-xs font-black transition-all disabled:opacity-40"
+            style={{ background: "rgba(248,113,113,0.10)", color: "#f87171", border: "1px solid rgba(248,113,113,0.25)" }}
           >
-            ✏️
+            ✗ Incorrecto
           </button>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
