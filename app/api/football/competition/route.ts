@@ -15,16 +15,18 @@ export async function GET(req: NextRequest) {
     if (!res.ok) return NextResponse.json([]);
 
     const data = await res.json();
-    const matches = (data.matches ?? []).map((m: any) => ({
-      idEvent:          String(m.id),
-      strHomeTeam:      m.homeTeam.name,
-      strAwayTeam:      m.awayTeam.name,
-      strLeague:        m.competition.name,
-      dateEvent:        m.utcDate.split("T")[0],
-      strTime:          m.utcDate.split("T")[1]?.slice(0, 5) ?? null,
-      strHomeTeamBadge: m.homeTeam.crest ?? null,
-      strAwayTeamBadge: m.awayTeam.crest ?? null,
-    }));
+    const matches = (data.matches ?? [])
+      .filter((m: any) => m.homeTeam?.name && m.awayTeam?.name)
+      .map((m: any) => ({
+        idEvent:          String(m.id),
+        strHomeTeam:      m.homeTeam.name,
+        strAwayTeam:      m.awayTeam.name,
+        strLeague:        m.competition.name,
+        dateEvent:        m.utcDate.split("T")[0],
+        strTime:          m.utcDate.split("T")[1]?.slice(0, 5) ?? null,
+        strHomeTeamBadge: m.homeTeam.crest ?? null,
+        strAwayTeamBadge: m.awayTeam.crest ?? null,
+      }));
 
     return NextResponse.json(matches);
   } catch {
