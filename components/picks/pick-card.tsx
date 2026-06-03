@@ -310,8 +310,13 @@ export default function PickCard({ pick, currentUserId, userLiked, defaultShowCo
       {/* Razonamiento */}
       {pick.reasoning && (
         <div className="px-4 mb-3">
-          <p className="text-sm leading-relaxed pl-3"
-            style={{ color: "#6b87ab", borderLeft: "2px solid rgba(255,255,255,0.08)" }}>
+          <p className="text-sm leading-relaxed px-3 py-2 rounded-xl"
+            style={{
+              color: "#c8d8f0",
+              background: "rgba(255,255,255,0.04)",
+              border: "1px solid rgba(255,255,255,0.07)",
+              fontWeight: 500,
+            }}>
             "{pick.reasoning}"
           </p>
         </div>
