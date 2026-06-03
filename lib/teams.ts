@@ -3,6 +3,7 @@ export type Team = {
   name: string;
   logo: string;
   league: string;
+  sportsdbName?: string; // nombre alternativo para buscar en TheSportsDB
 };
 
 const BASE = "https://crests.football-data.org";
@@ -106,7 +107,7 @@ export const TEAMS: Team[] = [
   { id: "543",  name: "Nantes",              logo: `${BASE}/543.png`,  league: "Ligue 1" },
   { id: "545",  name: "Metz",               logo: `${BASE}/545.png`,  league: "Ligue 1" },
   { id: "522",  name: "Niza",                logo: `${BASE}/522.png`,  league: "Ligue 1" },
-  { id: "524",  name: "Paris Saint-Germain", logo: `${BASE}/524.png`,  league: "Ligue 1" },
+  { id: "524",  name: "Paris Saint-Germain", logo: `${BASE}/524.png`,  league: "Ligue 1", sportsdbName: "Paris SG" },
   { id: "529",  name: "Rennes",              logo: `${BASE}/529.png`,  league: "Ligue 1" },
   { id: "576",  name: "Racing de Estrasburgo", logo: `${BASE}/576.png`, league: "Ligue 1" },
   { id: "525",  name: "Lorient",              logo: `${BASE}/525.png`,  league: "Ligue 1" },

@@ -7,31 +7,18 @@ import { z } from "zod";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase";
-import TeamSearch from "@/components/picks/team-search";
-
-const LEAGUES = [
-  "UEFA Champions League",
-  "UEFA Europa League",
-  "UEFA Conference League",
-  "Premier League",
-  "La Liga",
-  "Bundesliga",
-  "Serie A",
-  "Ligue 1",
-  "Liga Dimayor",
-  "Otra liga",
-];
+import MatchSelector, { type SelectedMatch } from "@/components/picks/match-selector";
 
 const PREDICTIONS = [
-  { value: "home", label: "Local",    emoji: "🏠", gradient: "linear-gradient(135deg, #2563eb, #1d4ed8)", shadow: "rgba(37,99,235,0.35)" },
-  { value: "draw", label: "Empate",   emoji: "🤝", gradient: "linear-gradient(135deg, #d97706, #b45309)", shadow: "rgba(217,119,6,0.35)" },
-  { value: "away", label: "Visitante",emoji: "✈️", gradient: "linear-gradient(135deg, #7c3aed, #6d28d9)", shadow: "rgba(124,58,237,0.35)" },
+  { value: "home", label: "Local",     emoji: "🏠", gradient: "linear-gradient(135deg, #2563eb, #1d4ed8)", shadow: "rgba(37,99,235,0.35)" },
+  { value: "draw", label: "Empate",    emoji: "🤝", gradient: "linear-gradient(135deg, #d97706, #b45309)", shadow: "rgba(217,119,6,0.35)" },
+  { value: "away", label: "Visitante", emoji: "✈️", gradient: "linear-gradient(135deg, #7c3aed, #6d28d9)", shadow: "rgba(124,58,237,0.35)" },
 ] as const;
 
 const pickSchema = z.object({
-  league:     z.string().min(1, "Seleccioná una liga"),
+  league:     z.string().min(1, "Seleccioná un partido"),
   prediction: z.enum(["home", "draw", "away"]),
-  match_date: z.string().min(1, "Ingresá la fecha del partido"),
+  match_date: z.string().min(1, "Seleccioná un partido"),
   reasoning:  z.string().max(500, "Máximo 500 caracteres").optional(),
 });
 
@@ -43,6 +30,7 @@ export default function NewPickPage() {
   const [error, setError]       = useState<string | null>(null);
   const [homeTeam, setHomeTeam] = useState({ name: "", logo: "" });
   const [awayTeam, setAwayTeam] = useState({ name: "", logo: "" });
+  const [league, setLeague]     = useState("");
 
   useEffect(() => {
     const supabase = createClient();
@@ -55,15 +43,28 @@ export default function NewPickPage() {
     resolver: zodResolver(pickSchema),
   });
 
-  const [leagueOpen, setLeagueOpen] = useState(false);
   const selectedPrediction = watch("prediction");
-  const selectedLeague     = watch("league");
   const selectedDate       = watch("match_date");
-  const selectedLeagueData = LEAGUES.find(l => l === selectedLeague);
+
+  function handleMatchSelect(match: SelectedMatch) {
+    setHomeTeam({ name: match.homeTeam, logo: match.homeTeamLogo });
+    setAwayTeam({ name: match.awayTeam, logo: match.awayTeamLogo });
+    setLeague(match.league);
+    setValue("league",     match.league);
+    setValue("match_date", match.matchDate);
+    setError(null);
+  }
+
+  function handleMatchClear() {
+    setHomeTeam({ name: "", logo: "" });
+    setAwayTeam({ name: "", logo: "" });
+    setLeague("");
+    setValue("league",     "");
+    setValue("match_date", "");
+  }
 
   async function onSubmit(data: PickForm) {
-    if (!homeTeam.name) { setError("Seleccioná el equipo local"); return; }
-    if (!awayTeam.name) { setError("Seleccioná el equipo visitante"); return; }
+    if (!homeTeam.name) { setError("Seleccioná un partido primero"); return; }
 
     setLoading(true);
     setError(null);
@@ -113,8 +114,8 @@ export default function NewPickPage() {
         {/* Preview del partido */}
         <div className="rounded-2xl p-4" style={{
           background: "linear-gradient(160deg, #1f2f48 0%, #182438 100%)",
-          border: "1px solid rgba(255,255,255,0.07)",
-          boxShadow: "0 8px 32px rgba(0,0,0,0.35)",
+          border:     "1px solid rgba(255,255,255,0.07)",
+          boxShadow:  "0 8px 32px rgba(0,0,0,0.35)",
         }}>
           <div className="flex items-center justify-between gap-4">
 
@@ -123,14 +124,14 @@ export default function NewPickPage() {
               {homeTeam.logo ? (
                 <Image src={homeTeam.logo} alt={homeTeam.name} width={52} height={52} className="object-contain mx-auto mb-2 drop-shadow-md" unoptimized />
               ) : (
-                <div className="w-13 h-13 rounded-full mx-auto mb-2 flex items-center justify-center text-2xl" style={{ background: "rgba(255,255,255,0.04)", width: 52, height: 52 }}>⚽</div>
+                <div className="rounded-full mx-auto mb-2 flex items-center justify-center text-2xl" style={{ background: "rgba(255,255,255,0.04)", width: 52, height: 52 }}>⚽</div>
               )}
               <p className="text-sm font-black" style={{ color: homeTeam.name ? "#f0f6ff" : "#2a3d5a" }}>
                 {homeTeam.name || "Local"}
               </p>
             </div>
 
-            {/* VS / predicción */}
+            {/* VS / predicción / info */}
             <div className="flex flex-col items-center gap-1.5 flex-shrink-0">
               {predInfo ? (
                 <span className="px-4 py-1 rounded-full text-xs font-black"
@@ -142,7 +143,12 @@ export default function NewPickPage() {
               )}
               {selectedDate && (
                 <span className="text-xs" style={{ color: "#3a5070" }}>
-                  {new Date(selectedDate).toLocaleDateString("es-ES", { day: "numeric", month: "short" })}
+                  {new Date(selectedDate + "T12:00:00").toLocaleDateString("es-ES", { day: "numeric", month: "short" })}
+                </span>
+              )}
+              {league && (
+                <span className="text-xs text-center px-2" style={{ color: "#2a4565", maxWidth: 100, lineHeight: 1.2 }}>
+                  {league}
                 </span>
               )}
             </div>
@@ -152,7 +158,7 @@ export default function NewPickPage() {
               {awayTeam.logo ? (
                 <Image src={awayTeam.logo} alt={awayTeam.name} width={52} height={52} className="object-contain mx-auto mb-2 drop-shadow-md" unoptimized />
               ) : (
-                <div className="w-13 h-13 rounded-full mx-auto mb-2 flex items-center justify-center text-2xl" style={{ background: "rgba(255,255,255,0.04)", width: 52, height: 52 }}>⚽</div>
+                <div className="rounded-full mx-auto mb-2 flex items-center justify-center text-2xl" style={{ background: "rgba(255,255,255,0.04)", width: 52, height: 52 }}>⚽</div>
               )}
               <p className="text-sm font-black" style={{ color: awayTeam.name ? "#f0f6ff" : "#2a3d5a" }}>
                 {awayTeam.name || "Visitante"}
@@ -161,87 +167,11 @@ export default function NewPickPage() {
           </div>
         </div>
 
-        {/* Equipos */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <TeamSearch label="Equipo local" placeholder="Buscar equipo..." onSelect={(name, logo) => setHomeTeam({ name, logo })} />
-          <TeamSearch label="Equipo visitante" placeholder="Buscar equipo..." onSelect={(name, logo) => setAwayTeam({ name, logo })} />
-        </div>
-
-        {/* Liga + Fecha en la misma fila */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-
-          {/* Liga — dropdown custom */}
-          <div className="space-y-1.5">
-            <label className="text-sm font-semibold" style={{ color: "#8fa8cc" }}>Liga</label>
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setLeagueOpen(v => !v)}
-                onBlur={() => setTimeout(() => setLeagueOpen(false), 150)}
-                className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm text-left transition-all"
-                style={{
-                  background: "rgba(255,255,255,0.05)",
-                  border: leagueOpen ? "1px solid rgba(34,197,94,0.45)" : "1px solid rgba(255,255,255,0.09)",
-                  color: selectedLeague ? "#f0f6ff" : "#4a6080",
-                  boxShadow: leagueOpen ? "0 0 0 3px rgba(34,197,94,0.07)" : "none",
-                }}
-              >
-                  <span className="flex-1 truncate">{selectedLeague || "Seleccionar liga"}</span>
-                <span style={{ color: "#3a5070" }}>▾</span>
-              </button>
-
-              {leagueOpen && (
-                <div
-                  className="absolute top-full left-0 right-0 mt-1.5 z-50 rounded-xl overflow-hidden"
-                  style={{
-                    background: "linear-gradient(160deg, #1c2d45 0%, #162035 100%)",
-                    border: "1px solid rgba(255,255,255,0.10)",
-                    boxShadow: "0 16px 48px rgba(0,0,0,0.55)",
-                    maxHeight: "260px",
-                    overflowY: "auto",
-                    animation: "dropdownIn 0.18s ease-out forwards",
-                  }}
-                >
-                  {LEAGUES.map((l) => (
-                    <button
-                      key={l}
-                      type="button"
-                      onMouseDown={() => { setValue("league", l); setLeagueOpen(false); }}
-                      className="flex items-center gap-3 w-full px-3 py-2.5 text-left transition-all"
-                      style={{
-                        borderBottom: "1px solid rgba(255,255,255,0.04)",
-                        background: selectedLeague === l ? "rgba(34,197,94,0.10)" : "transparent",
-                      }}
-                      onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(34,197,94,0.08)"; }}
-                      onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = selectedLeague === l ? "rgba(34,197,94,0.10)" : "transparent"; }}
-                    >
-                      <span className="text-sm font-semibold" style={{ color: "#e8f0fe" }}>{l}</span>
-                      {selectedLeague === l && <span className="ml-auto text-xs" style={{ color: "#4ade80" }}>✓</span>}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-            {errors.league && <p className="text-red-400 text-xs">{errors.league.message}</p>}
-          </div>
-
-          {/* Fecha */}
-          <div className="space-y-1.5">
-            <label className="text-sm font-semibold" style={{ color: "#8fa8cc" }}>Fecha</label>
-            <input
-              type="date"
-              className="w-full text-sm outline-none rounded-xl px-3 py-2.5 transition-all"
-              style={{
-                background: "rgba(255,255,255,0.05)",
-                border: "1px solid rgba(255,255,255,0.09)",
-                color: "#f0f6ff",
-                colorScheme: "dark",
-              }}
-              {...register("match_date")}
-            />
-            {errors.match_date && <p className="text-red-400 text-xs">{errors.match_date.message}</p>}
-          </div>
-        </div>
+        {/* Match Selector */}
+        <MatchSelector onSelect={handleMatchSelect} onClear={handleMatchClear} />
+        {(errors.league || errors.match_date) && !homeTeam.name && (
+          <p className="text-red-400 text-xs -mt-2">Seleccioná un partido primero</p>
+        )}
 
         {/* Predicción */}
         <div className="space-y-1.5">
@@ -256,16 +186,16 @@ export default function NewPickPage() {
                   onClick={() => setValue("prediction", opt.value)}
                   className="py-3 rounded-xl text-sm font-black transition-all"
                   style={active ? {
-                    background: opt.gradient,
-                    color: "#fff",
-                    boxShadow: `0 4px 16px ${opt.shadow}`,
-                    transform: "scale(1.03)",
-                    border: "1px solid transparent",
+                    background:  opt.gradient,
+                    color:       "#fff",
+                    boxShadow:   `0 4px 16px ${opt.shadow}`,
+                    transform:   "scale(1.03)",
+                    border:      "1px solid transparent",
                   } : {
-                    background: "rgba(255,255,255,0.04)",
-                    color: "#4a6080",
-                    border: "1px solid rgba(255,255,255,0.08)",
-                    transform: "scale(1)",
+                    background:  "rgba(255,255,255,0.04)",
+                    color:       "#4a6080",
+                    border:      "1px solid rgba(255,255,255,0.08)",
+                    transform:   "scale(1)",
                   }}
                 >
                   {opt.emoji} {opt.label}
@@ -287,8 +217,8 @@ export default function NewPickPage() {
             className="w-full text-sm outline-none rounded-xl px-3 py-2.5 resize-none transition-all placeholder:text-[#4a6080]"
             style={{
               background: "rgba(255,255,255,0.08)",
-              border: "1px solid rgba(255,255,255,0.12)",
-              color: "#f0f6ff",
+              border:     "1px solid rgba(255,255,255,0.12)",
+              color:      "#f0f6ff",
             }}
             {...register("reasoning")}
             onFocus={(e) => { e.target.style.border = "1px solid rgba(34,197,94,0.40)"; e.target.style.boxShadow = "0 0 0 3px rgba(34,197,94,0.07)"; }}
@@ -315,9 +245,9 @@ export default function NewPickPage() {
             className="flex-1 py-3 rounded-xl text-sm font-black transition-all"
             style={{
               background: loading ? "rgba(34,197,94,0.4)" : "linear-gradient(135deg, #22c55e, #16a34a)",
-              color: "#fff",
-              boxShadow: loading ? "none" : "0 4px 16px rgba(34,197,94,0.30)",
-              border: "1px solid transparent",
+              color:      "#fff",
+              boxShadow:  loading ? "none" : "0 4px 16px rgba(34,197,94,0.30)",
+              border:     "1px solid transparent",
             }}
           >
             {loading ? "Publicando..." : "⚡ Publicar pick"}
