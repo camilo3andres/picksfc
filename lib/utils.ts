@@ -26,3 +26,18 @@ export function parseLocalDate(dateStr: string): Date {
   const [y, m, d] = dateStr.slice(0, 10).split("-").map(Number);
   return new Date(y, m - 1, d);
 }
+
+// Ajusta la fecha UTC al día local en EEUU.
+// Si strTime UTC es 00:00–06:59 (medianoche–madrugada UTC = tarde/noche en USA),
+// el partido es realmente el día anterior.
+export function getUSLocalDate(dateEvent: string, strTime: string | null): string {
+  if (!strTime) return dateEvent;
+  const hour = parseInt(strTime.split(":")[0]);
+  if (hour < 7) {
+    const [y, m, d] = dateEvent.split("-").map(Number);
+    const date = new Date(y, m - 1, d);
+    date.setDate(date.getDate() - 1);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+  }
+  return dateEvent;
+}

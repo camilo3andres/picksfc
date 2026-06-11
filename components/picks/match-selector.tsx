@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { searchTeams, type Team } from "@/lib/teams";
 import { searchTeamsFromAPI, getNextMatches, type ApiMatch } from "@/lib/football-api";
+import { getUSLocalDate } from "@/lib/utils";
 
 export type SelectedMatch = {
   homeTeam: string;
@@ -105,7 +106,7 @@ export default function MatchSelector({ onSelect, onClear }: Props) {
       awayTeam:     match.strAwayTeam,
       awayTeamLogo: match.strAwayTeamBadge ?? "",
       league:       match.strLeague,
-      matchDate:    match.dateEvent,
+      matchDate:    getUSLocalDate(match.dateEvent, match.strTime),
       matchTime:    match.strTime ?? null,
     });
   }
@@ -164,7 +165,7 @@ export default function MatchSelector({ onSelect, onClear }: Props) {
               {selectedMatch.strHomeTeam} vs {selectedMatch.strAwayTeam}
             </p>
             <p className="text-xs" style={{ color: "#4ade80" }}>
-              {selectedMatch.strLeague} · {formatDate(selectedMatch.dateEvent)}
+              {selectedMatch.strLeague} · {formatDate(getUSLocalDate(selectedMatch.dateEvent, selectedMatch.strTime))}
             </p>
           </div>
           <TeamBadge url={selectedMatch.strAwayTeamBadge} name={selectedMatch.strAwayTeam} />
@@ -240,7 +241,7 @@ export default function MatchSelector({ onSelect, onClear }: Props) {
                     {match.strAwayTeam}
                   </p>
                   <p className="text-xs mt-0.5" style={{ color: "#4a6080" }}>
-                    {match.strLeague} · {formatDate(match.dateEvent)}
+                    {match.strLeague} · {formatDate(getUSLocalDate(match.dateEvent, match.strTime))}
                   </p>
                 </div>
                 <TeamBadge url={match.strAwayTeamBadge} name={match.strAwayTeam} size={22} />
