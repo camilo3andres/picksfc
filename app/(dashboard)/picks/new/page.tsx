@@ -33,11 +33,12 @@ type PickForm = z.infer<typeof pickSchema>;
 
 export default function NewPickPage() {
   const router = useRouter();
-  const [loading, setLoading]   = useState(false);
-  const [error, setError]       = useState<string | null>(null);
-  const [homeTeam, setHomeTeam] = useState({ name: "", logo: "" });
-  const [awayTeam, setAwayTeam] = useState({ name: "", logo: "" });
-  const [league, setLeague]     = useState("");
+  const [loading, setLoading]     = useState(false);
+  const [error, setError]         = useState<string | null>(null);
+  const [homeTeam, setHomeTeam]   = useState({ name: "", logo: "" });
+  const [awayTeam, setAwayTeam]   = useState({ name: "", logo: "" });
+  const [league, setLeague]       = useState("");
+  const [matchTime, setMatchTime] = useState<string | null>(null);
 
   useEffect(() => {
     const supabase = createClient();
@@ -57,6 +58,7 @@ export default function NewPickPage() {
     setHomeTeam({ name: match.homeTeam, logo: match.homeTeamLogo });
     setAwayTeam({ name: match.awayTeam, logo: match.awayTeamLogo });
     setLeague(match.league);
+    setMatchTime(match.matchTime);
     setValue("league",     match.league);
     setValue("match_date", match.matchDate);
     setError(null);
@@ -66,12 +68,30 @@ export default function NewPickPage() {
     setHomeTeam({ name: "", logo: "" });
     setAwayTeam({ name: "", logo: "" });
     setLeague("");
+    setMatchTime(null);
     setValue("league",     "");
     setValue("match_date", "");
   }
 
   async function onSubmit(data: PickForm) {
     if (!homeTeam.name) { setError("Seleccioná un partido primero"); return; }
+
+    // Bloquear si el partido ya comenzó
+    if (matchTime) {
+      const matchStart = new Date(`${data.match_date}T${matchTime}Z`);
+      if (new Date() >= matchStart) {
+        setError("⏰ Este partido ya comenzó. No se pueden publicar picks de partidos en curso.");
+        return;
+      }
+    } else {
+      // Sin hora exacta: bloquear si la fecha ya pasó
+      const [y, m, d] = data.match_date.split("-").map(Number);
+      const matchDay = new Date(y, m - 1, d + 1); // inicio del día siguiente
+      if (new Date() >= matchDay) {
+        setError("⏰ Este partido ya pasó. No se pueden publicar picks de partidos anteriores.");
+        return;
+      }
+    }
 
     setLoading(true);
     setError(null);

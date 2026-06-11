@@ -12,6 +12,7 @@ export type SelectedMatch = {
   awayTeamLogo: string;
   league: string;
   matchDate: string;
+  matchTime: string | null;
 };
 
 type Props = {
@@ -105,6 +106,7 @@ export default function MatchSelector({ onSelect, onClear }: Props) {
       awayTeamLogo: match.strAwayTeamBadge ?? "",
       league:       match.strLeague,
       matchDate:    match.dateEvent,
+      matchTime:    match.strTime ?? null,
     });
   }
 
