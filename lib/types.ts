@@ -3,6 +3,10 @@ export type Profile = {
   username: string;
   avatar_url: string | null;
   bio: string | null;
+  instagram: string | null;
+  tiktok: string | null;
+  twitter: string | null;
+  telegram: string | null;
   total_picks: number;
   correct_picks: number;
   is_verified: boolean;

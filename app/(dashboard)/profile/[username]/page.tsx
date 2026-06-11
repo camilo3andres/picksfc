@@ -4,6 +4,7 @@ import PickCard from "@/components/picks/pick-card";
 import FollowButton from "@/components/profile/follow-button";
 import VerifiedBadge from "@/components/ui/verified-badge";
 import { getAvatarColor } from "@/lib/utils";
+import { Music2 } from "lucide-react";
 
 type Props = {
   params: Promise<{ username: string }>;
@@ -14,34 +15,42 @@ export default async function ProfilePage({ params }: Props) {
   const { username } = await params;
   const supabase = await createClient();
 
-  const { data: { user } } = await supabase.auth.getUser();
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("username", username)
-    .single();
+  // Ronda 1: user y profile en paralelo (no dependen uno del otro)
+  const [authResult, { data: profile }] = await Promise.all([
+    supabase.auth.getUser(),
+    supabase.from("profiles").select("*").eq("username", username).single(),
+  ]);
+  const user = authResult.data.user;
 
   if (!profile) notFound();
 
-  const { data: picks } = await supabase
-    .from("picks")
-    .select("*, profiles(username, is_verified)")
-    .eq("user_id", profile.id)
-    .order("created_at", { ascending: false });
+  // Ronda 2: todo lo demás en paralelo (ya tenemos profile.id y user.id)
+  const [
+    { data: picks },
+    { data: userLikes },
+    { count: followersCount },
+    { count: followingCount },
+    { data: followData },
+  ] = await Promise.all([
+    supabase.from("picks").select("*, profiles(username, is_verified)").eq("user_id", profile.id).order("created_at", { ascending: false }).limit(50),
+    user ? supabase.from("likes").select("pick_id").eq("user_id", user.id) : Promise.resolve({ data: [] }),
+    supabase.from("follows").select("*", { count: "exact", head: true }).eq("following_id", profile.id),
+    supabase.from("follows").select("*", { count: "exact", head: true }).eq("follower_id", profile.id),
+    user
+      ? supabase.from("follows").select("follower_id").eq("follower_id", user.id).eq("following_id", profile.id).maybeSingle()
+      : Promise.resolve({ data: null }),
+  ]);
 
-  const { data: userLikes } = user
-    ? await supabase.from("likes").select("pick_id").eq("user_id", user.id)
-    : { data: [] };
+  const isFollowing = !!followData;
 
   const likedPickIds = new Set(userLikes?.map((l) => l.pick_id) ?? []);
 
-  const totalPicks    = picks?.length ?? 0;
-  const correctPicks  = picks?.filter((p) => p.status === "correct").length ?? 0;
+  const totalPicks     = picks?.length ?? 0;
+  const correctPicks   = picks?.filter((p) => p.status === "correct").length ?? 0;
   const incorrectPicks = picks?.filter((p) => p.status === "incorrect").length ?? 0;
-  const pendingPicks  = picks?.filter((p) => p.status === "pending").length ?? 0;
-  const resolvedPicks = correctPicks + incorrectPicks;
-  const accuracy      = resolvedPicks > 0 ? Math.round((correctPicks / resolvedPicks) * 100) : 0;
+  const pendingPicks   = picks?.filter((p) => p.status === "pending").length ?? 0;
+  const resolvedPicks  = correctPicks + incorrectPicks;
+  const accuracy       = resolvedPicks > 0 ? Math.round((correctPicks / resolvedPicks) * 100) : 0;
 
   // Racha actual (picks correctos consecutivos más recientes)
   let streak = 0;
@@ -63,16 +72,6 @@ export default async function ProfilePage({ params }: Props) {
     .sort((a, b) => b[1].correct / b[1].total - a[1].correct / a[1].total)[0];
 
   const isOwnProfile = user?.id === profile.id;
-
-  const [{ count: followersCount }, { count: followingCount }, { data: followData }] = await Promise.all([
-    supabase.from("follows").select("*", { count: "exact", head: true }).eq("following_id", profile.id),
-    supabase.from("follows").select("*", { count: "exact", head: true }).eq("follower_id", profile.id),
-    user
-      ? supabase.from("follows").select("follower_id").eq("follower_id", user.id).eq("following_id", profile.id).maybeSingle()
-      : Promise.resolve({ data: null }),
-  ]);
-
-  const isFollowing = !!followData;
 
   return (
     <div className="space-y-6">
@@ -126,7 +125,15 @@ export default async function ProfilePage({ params }: Props) {
                     </span>
                   )}
                 </div>
-                {!isOwnProfile && user && (
+                {isOwnProfile ? (
+                  <a
+                    href="/profile/edit"
+                    className="text-xs font-bold px-3 py-1.5 rounded-lg transition-all"
+                    style={{ background: "rgba(255,255,255,0.07)", color: "#8fa8cc", border: "1px solid rgba(255,255,255,0.10)" }}
+                  >
+                    Editar perfil
+                  </a>
+                ) : user && (
                   <FollowButton
                     currentUserId={user.id}
                     targetUserId={profile.id}
@@ -145,6 +152,70 @@ export default async function ProfilePage({ params }: Props) {
               {profile.bio && (
                 <p className="text-sm mt-0.5" style={{ color: "#6b87ab" }}>{profile.bio}</p>
               )}
+
+              {/* Redes sociales */}
+              {(profile.instagram || profile.tiktok || profile.twitter || profile.telegram) && (
+                <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                  {profile.instagram && (
+                    <a
+                      href={`https://instagram.com/${profile.instagram}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full transition-opacity hover:opacity-75"
+                      style={{ background: "rgba(225,48,108,0.12)", color: "#e1306c", border: "1px solid rgba(225,48,108,0.22)" }}
+                    >
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+                        <circle cx="12" cy="12" r="3.5"/>
+                        <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/>
+                      </svg>
+                      @{profile.instagram}
+                    </a>
+                  )}
+                  {profile.tiktok && (
+                    <a
+                      href={`https://tiktok.com/@${profile.tiktok}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full transition-opacity hover:opacity-75"
+                      style={{ background: "rgba(255,255,255,0.07)", color: "#d1d5db", border: "1px solid rgba(255,255,255,0.12)" }}
+                    >
+                      <Music2 size={10} />
+                      @{profile.tiktok}
+                    </a>
+                  )}
+
+                  {profile.twitter && (
+                    <a
+                      href={`https://x.com/${profile.twitter}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full transition-opacity hover:opacity-75"
+                      style={{ background: "rgba(29,161,242,0.10)", color: "#1da1f2", border: "1px solid rgba(29,161,242,0.22)" }}
+                    >
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.74l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                      </svg>
+                      @{profile.twitter}
+                    </a>
+                  )}
+                  {profile.telegram && (
+                    <a
+                      href={`https://t.me/${profile.telegram}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full transition-opacity hover:opacity-75"
+                      style={{ background: "rgba(0,136,204,0.12)", color: "#29b6f6", border: "1px solid rgba(0,136,204,0.25)" }}
+                    >
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.927 14.14l-2.955-.924c-.64-.203-.658-.64.136-.953l11.57-4.461c.537-.194 1.006.131.832.94z"/>
+                      </svg>
+                      @{profile.telegram}
+                    </a>
+                  )}
+                </div>
+              )}
+
               <p className="text-xs mt-0.5" style={{ color: "#5a7a9a" }}>
                 Miembro desde {new Date(profile.created_at).toLocaleDateString("es-ES", { month: "long", year: "numeric" })}
               </p>
