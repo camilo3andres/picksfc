@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase";
 import { Pick } from "@/lib/types";
-import { getAvatarColor } from "@/lib/utils";
+import { getAvatarColor, parseLocalDate } from "@/lib/utils";
 import CommentsSection from "./comments-section";
 import VerifiedBadge from "@/components/ui/verified-badge";
 
@@ -278,7 +278,7 @@ export default function PickCard({ pick, currentUserId, userLiked, defaultShowCo
               <div className="text-center">
                 <span className="font-black" style={{ fontSize: "1rem", color: "#7a9ab8", letterSpacing: "0.12em" }}>VS</span>
                 <span className="block text-[10px] mt-1" style={{ color: "#7a9ab8" }}>
-                  {new Date(pick.match_date).toLocaleDateString("es-ES", { day: "numeric", month: "short" })}
+                  {parseLocalDate(pick.match_date).toLocaleDateString("es-ES", { day: "numeric", month: "short" })}
                 </span>
               </div>
             )}

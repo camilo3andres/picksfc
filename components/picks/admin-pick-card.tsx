@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase";
 import { Pick } from "@/lib/types";
+import { parseLocalDate } from "@/lib/utils";
 
 type Props = {
   pick: Pick & { profiles: { username: string } };
@@ -144,7 +145,7 @@ export default function AdminPickCard({ pick }: Props) {
           {PREDICTION_LABEL[pick.prediction]}
         </span>
         <span className="text-xs ml-auto" style={{ color: "#4a6080" }}>
-          {new Date(pick.match_date).toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" })}
+          {parseLocalDate(pick.match_date).toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" })}
         </span>
       </div>
 

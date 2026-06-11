@@ -20,3 +20,9 @@ export function getAvatarColor(username: string) {
   const code = username.charCodeAt(0) * 31 + (username.charCodeAt(1) || 0);
   return AVATAR_GRADIENTS[code % AVATAR_GRADIENTS.length];
 }
+
+// Parsea "YYYY-MM-DD" como fecha local (evita el desfase UTC que muestra un día antes)
+export function parseLocalDate(dateStr: string): Date {
+  const [y, m, d] = dateStr.slice(0, 10).split("-").map(Number);
+  return new Date(y, m - 1, d);
+}
