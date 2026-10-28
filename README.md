@@ -1,36 +1,65 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PicksFC ⚽
 
-## Getting Started
+Plataforma web de pronósticos de fútbol con comunidad. Los usuarios publican sus picks sobre partidos reales, construyen un historial público verificado y compiten en un ranking de precisión.
 
-First, run the development server:
+🔗 **Demo en vivo:** [picksfc.com](https://picksfc.com)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Funcionalidades
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- **Autenticación:** registro, inicio de sesión y recuperación de contraseña.
+- **Picks sobre partidos reales:** selección de partidos desde APIs deportivas, con bloqueo automático cuando el partido ya comenzó.
+- **Feed en tiempo real:** los picks nuevos aparecen al instante, sin recargar la página.
+- **Comunidad:** likes, seguir a otros usuarios y filtro de feed "Siguiendo".
+- **Perfiles:** estadísticas de aciertos, biografía y redes sociales.
+- **Ranking:** clasificación de usuarios según su precisión.
+- **Panel de administración:** resolución de picks por marcador final.
+- **Diseño responsive:** adaptado a móvil y escritorio.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Tecnologías
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Área | Tecnología |
+|---|---|
+| Frontend | Next.js, React, TypeScript, Tailwind CSS |
+| Backend | Rutas API de Next.js (Node.js) |
+| Base de datos y autenticación | Supabase (PostgreSQL, Auth, Realtime) |
+| Datos deportivos | TheSportsDB, football-data.org |
+| Despliegue | Vercel (despliegue continuo desde GitHub) |
 
-## Learn More
+## Aspectos técnicos destacados
 
-To learn more about Next.js, take a look at the following resources:
+- **Seguridad en la base de datos:** políticas RLS (Row Level Security) y un trigger que impide que un usuario se otorgue permisos de administrador.
+- **Llaves protegidas:** las consultas a APIs externas se hacen desde el servidor, para que las llaves nunca lleguen al navegador.
+- **Estadísticas automáticas:** triggers de PostgreSQL actualizan los aciertos de cada usuario cuando se resuelve un pick.
+- **Manejo de zonas horarias:** corrección de fechas para partidos nocturnos (diferencia entre UTC y hora local).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Ejecutar en local
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Clona el repositorio e instala las dependencias:
 
-## Deploy on Vercel
+   ```bash
+   npm install
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+2. Crea un archivo `.env.local` con tus propias credenciales:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+   ```bash
+   NEXT_PUBLIC_SUPABASE_URL=
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=
+   FOOTBALL_DATA_API_KEY=
+   ```
+
+3. Inicia el servidor de desarrollo:
+
+   ```bash
+   npm run dev
+   ```
+
+   La aplicación queda disponible en [http://localhost:3000](http://localhost:3000).
+
+## Sobre el desarrollo
+
+Proyecto personal desarrollado con asistencia de IA (Claude Code): yo defino los requerimientos y tomo las decisiones de producto, y reviso el código generado.
+
+---
+
+Desarrollado por **Camilo Torres** · [GitHub](https://github.com/camilo3andres)
