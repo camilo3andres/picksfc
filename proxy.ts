@@ -2,6 +2,23 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function proxy(request: NextRequest) {
+  // Modo mantenimiento — se activa con MAINTENANCE_MODE=true en Vercel.
+  // En localhost la variable no existe, así que se trabaja normal.
+  if (process.env.MAINTENANCE_MODE === "true") {
+    const { pathname } = request.nextUrl;
+
+    // Las APIs responden con error en vez de HTML
+    if (pathname.startsWith("/api")) {
+      return NextResponse.json({ error: "En mantenimiento" }, { status: 503 });
+    }
+
+    // El logo sí debe cargar para que se vea la pantalla de mantenimiento
+    if (pathname === "/icon.png") return NextResponse.next();
+
+    // 503 = "no disponible temporalmente" → Google no saca la página del buscador
+    return NextResponse.rewrite(new URL("/mantenimiento", request.url), { status: 503 });
+  }
+
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
