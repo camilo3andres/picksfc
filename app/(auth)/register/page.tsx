@@ -41,6 +41,9 @@ export default function RegisterPage() {
       email: data.email,
       password: data.password,
       options: {
+        // A dónde vuelve el link del correo de confirmación: /auth/callback inicia
+        // la sesión y lleva al feed. Sin esto, Supabase usaba su "Site URL".
+        emailRedirectTo: `${window.location.origin}/auth/callback?next=/feed`,
         data: {
           username: data.username,
           // Prueba del consentimiento (Ley 1581): cuándo aceptó y qué versión de los términos

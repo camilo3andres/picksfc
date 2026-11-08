@@ -6,7 +6,11 @@ export async function GET(request: Request) {
   const code = searchParams.get("code");
   const tokenHash = searchParams.get("token_hash");
   const type = searchParams.get("type");
-  const next = searchParams.get("next") ?? "/feed";
+  // Solo rutas internas ("/feed", "/reset-password"...). Sin esta validación, un
+  // link como ?next=@sitio-falso.com armaría "https://picksfc.com@sitio-falso.com",
+  // que el navegador abre como sitio-falso.com (open redirect, usado en phishing).
+  const rawNext = searchParams.get("next") ?? "/feed";
+  const next = rawNext.startsWith("/") && !rawNext.startsWith("//") && !rawNext.startsWith("/\\") ? rawNext : "/feed";
 
   const supabase = await createClient();
 
