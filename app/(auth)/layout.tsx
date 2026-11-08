@@ -1,4 +1,5 @@
 import Image from "next/image";
+import SiteFooter from "@/components/site-footer";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -16,6 +17,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         </div>
 
         {children}
+
+        <SiteFooter />
       </div>
     </div>
   );

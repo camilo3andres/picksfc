@@ -1,4 +1,5 @@
 import Link from "next/link";
+import SiteFooter from "@/components/site-footer";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase-server";
 
@@ -72,6 +73,8 @@ export default async function HomePage() {
           Sin spam. Solo autenticación segura para tu cuenta.
         </p>
       </div>
+
+      <SiteFooter />
     </div>
   );
 }

@@ -205,6 +205,16 @@
 ::-webkit-scrollbar-thumb { background: var(--surface-2); border-radius: 2px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
 
+/* Páginas legales (/privacidad, /terminos): tipografía de lectura */
+.legal-text { color: var(--text-2); line-height: 1.75; font-size: 15px; }
+.legal-text h1 { color: var(--text); font-size: 1.9rem; font-weight: 900; line-height: 1.2; margin-bottom: 0.25rem; }
+.legal-text h2 { color: var(--text); font-size: 1.15rem; font-weight: 800; margin-top: 2rem; margin-bottom: 0.5rem; }
+.legal-text p, .legal-text ul { margin-bottom: 0.9rem; }
+.legal-text ul { list-style: disc; padding-left: 1.4rem; }
+.legal-text li { margin-bottom: 0.3rem; }
+.legal-text a { color: var(--primary-light); text-decoration: underline; }
+.legal-text strong { color: var(--text); }
+
 /* Corazón con like: brilla en azul (drop-shadow sigue la forma del ícono, no un cuadro) */
 .like-glow svg {
   filter: drop-shadow(0 0 6px rgba(var(--like-rgb), 0.85)) drop-shadow(0 0 14px rgba(var(--like-rgb), 0.45));

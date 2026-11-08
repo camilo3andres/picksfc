@@ -8,12 +8,15 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import { createClient } from "@/lib/supabase";
+import { LEGAL } from "@/lib/legal";
 
 const registerSchema = z.object({
   username: z.string().min(3, "Mínimo 3 caracteres").max(20, "Máximo 20 caracteres")
     .regex(/^[a-zA-Z0-9_]+$/, "Solo letras, números y guión bajo"),
   email: z.string().email("Email inválido"),
   password: z.string().min(6, "Mínimo 6 caracteres"),
+  // Obligatorio: aceptar Términos y Privacidad y confirmar mayoría de edad
+  acceptTerms: z.boolean().refine((v) => v, "Debes aceptar para crear tu cuenta"),
 });
 
 type RegisterForm = z.infer<typeof registerSchema>;
@@ -27,6 +30,7 @@ export default function RegisterPage() {
 
   const { register, handleSubmit, formState: { errors } } = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
+    defaultValues: { acceptTerms: false },
   });
 
   async function onSubmit(data: RegisterForm) {
@@ -36,7 +40,14 @@ export default function RegisterPage() {
     const { error } = await supabase.auth.signUp({
       email: data.email,
       password: data.password,
-      options: { data: { username: data.username } },
+      options: {
+        data: {
+          username: data.username,
+          // Prueba del consentimiento (Ley 1581): cuándo aceptó y qué versión de los términos
+          terms_accepted_at: new Date().toISOString(),
+          terms_version: LEGAL.termsVersion,
+        },
+      },
     });
     if (error) {
       setError(error.message === "User already registered"
@@ -139,6 +150,23 @@ export default function RegisterPage() {
             </button>
           </div>
           {errors.password && <p className="text-red-400 text-xs">{errors.password.message}</p>}
+        </div>
+
+        <div className="space-y-1.5">
+          <label className="flex items-start gap-2.5 text-sm leading-snug cursor-pointer" style={{ color: "var(--text-2)" }}>
+            <input
+              type="checkbox"
+              className="mt-0.5 w-4 h-4 flex-shrink-0 accent-sky-500 cursor-pointer"
+              {...register("acceptTerms")}
+            />
+            <span>
+              Tengo {LEGAL.minimumAge} años o más y acepto los{" "}
+              <Link href="/terminos" target="_blank" className="font-semibold underline" style={{ color: "var(--primary-light)" }}>Términos</Link>
+              {" "}y la{" "}
+              <Link href="/privacidad" target="_blank" className="font-semibold underline" style={{ color: "var(--primary-light)" }}>Política de privacidad</Link>.
+            </span>
+          </label>
+          {errors.acceptTerms && <p className="text-red-400 text-xs">{errors.acceptTerms.message}</p>}
         </div>
 
         {error && <p className="text-red-400 text-sm text-center">{error}</p>}
