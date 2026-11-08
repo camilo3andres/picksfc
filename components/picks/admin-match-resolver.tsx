@@ -103,10 +103,10 @@ export default function AdminMatchResolver({ pendingPicks }: Props) {
   if (matches.length === 0) {
     return (
       <div className="text-center py-8 rounded-2xl" style={{
-        background: "rgba(255,255,255,0.02)",
-        border: "1px solid rgba(255,255,255,0.05)",
+        background: "rgba(var(--tint-rgb), 0.02)",
+        border: "1px solid rgba(var(--tint-rgb), 0.05)",
       }}>
-        <p className="text-sm" style={{ color: "#4a6080" }}>No hay partidos pendientes por resolver</p>
+        <p className="text-sm" style={{ color: "var(--text-faint)" }}>No hay partidos pendientes por resolver</p>
       </div>
     );
   }
@@ -119,16 +119,16 @@ export default function AdminMatchResolver({ pendingPicks }: Props) {
 
         return (
           <div key={match.key} className="rounded-2xl p-4 space-y-3" style={{
-            background: "linear-gradient(160deg, #1f2f48 0%, #182438 100%)",
-            border: "1px solid rgba(255,255,255,0.08)",
+            background: "linear-gradient(160deg, var(--card-top) 0%, var(--card-bottom) 100%)",
+            border: "1px solid rgba(var(--tint-rgb), 0.08)",
           }}>
             {/* Liga + fecha + conteo */}
             <div className="flex items-center justify-between gap-2 flex-wrap">
-              <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ background: "rgba(255,255,255,0.05)", color: "#6b87ab" }}>
+              <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ background: "rgba(var(--tint-rgb), 0.05)", color: "var(--text-3)" }}>
                 🏆 {match.league}
               </span>
               <div className="flex items-center gap-2">
-                <span className="text-xs" style={{ color: "#4a6080" }}>
+                <span className="text-xs" style={{ color: "var(--text-faint)" }}>
                   {new Date(match.match_date).toLocaleDateString("es-ES", { day: "numeric", month: "short" })}
                 </span>
                 <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: "rgba(251,191,36,0.12)", color: "#fbbf24", border: "1px solid rgba(251,191,36,0.25)" }}>
@@ -143,7 +143,7 @@ export default function AdminMatchResolver({ pendingPicks }: Props) {
                 {match.home_team_logo && (
                   <Image src={match.home_team_logo} alt={match.home_team} width={28} height={28} className="object-contain flex-shrink-0" unoptimized />
                 )}
-                <span className="font-black text-sm truncate" style={{ color: "#f0f6ff" }}>{match.home_team}</span>
+                <span className="font-black text-sm truncate" style={{ color: "var(--text)" }}>{match.home_team}</span>
               </div>
 
               <div className="flex items-center gap-1.5 flex-shrink-0">
@@ -153,21 +153,21 @@ export default function AdminMatchResolver({ pendingPicks }: Props) {
                   onChange={(e) => setScore(match.key, "home", e.target.value)}
                   placeholder="0"
                   className="w-12 text-center text-white font-black text-lg rounded-xl py-1.5 outline-none transition-all"
-                  style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)" }}
+                  style={{ background: "rgba(var(--tint-rgb), 0.07)", border: "1px solid rgba(var(--tint-rgb), 0.12)" }}
                 />
-                <span className="font-black text-sm" style={{ color: "#3a5070" }}>-</span>
+                <span className="font-black text-sm" style={{ color: "var(--text-dim)" }}>-</span>
                 <input
                   type="number" min={0} max={99}
                   value={score.away}
                   onChange={(e) => setScore(match.key, "away", e.target.value)}
                   placeholder="0"
                   className="w-12 text-center text-white font-black text-lg rounded-xl py-1.5 outline-none transition-all"
-                  style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)" }}
+                  style={{ background: "rgba(var(--tint-rgb), 0.07)", border: "1px solid rgba(var(--tint-rgb), 0.12)" }}
                 />
               </div>
 
               <div className="flex-1 flex items-center gap-2 justify-end min-w-0">
-                <span className="font-black text-sm truncate text-right" style={{ color: "#f0f6ff" }}>{match.away_team}</span>
+                <span className="font-black text-sm truncate text-right" style={{ color: "var(--text)" }}>{match.away_team}</span>
                 {match.away_team_logo && (
                   <Image src={match.away_team_logo} alt={match.away_team} width={28} height={28} className="object-contain flex-shrink-0" unoptimized />
                 )}
@@ -177,7 +177,7 @@ export default function AdminMatchResolver({ pendingPicks }: Props) {
             {/* Picks de este partido */}
             <div className="flex flex-wrap gap-1.5">
               {match.picks.map((p) => (
-                <span key={p.id} className="text-xs px-2 py-0.5 rounded-lg font-semibold" style={{ background: "rgba(255,255,255,0.05)", color: "#6b87ab" }}>
+                <span key={p.id} className="text-xs px-2 py-0.5 rounded-lg font-semibold" style={{ background: "rgba(var(--tint-rgb), 0.05)", color: "var(--text-3)" }}>
                   @{p.profiles.username} → {{ home: "Local", draw: "Empate", away: "Visitante", home_draw: "Local o Empate", away_draw: "Visit. o Empate" }[p.prediction] ?? p.prediction}
                 </span>
               ))}
@@ -189,13 +189,13 @@ export default function AdminMatchResolver({ pendingPicks }: Props) {
               onClick={() => resolveMatch(match)}
               className="w-full py-2.5 rounded-xl text-sm font-black transition-all disabled:opacity-40 disabled:cursor-not-allowed"
               style={canResolve ? {
-                background: "linear-gradient(135deg, #22c55e, #16a34a)",
+                background: "linear-gradient(135deg, var(--primary), var(--primary-strong))",
                 color: "#fff",
-                boxShadow: "0 4px 14px rgba(34,197,94,0.28)",
+                boxShadow: "0 4px 14px rgba(var(--primary-rgb), 0.28)",
               } : {
-                background: "rgba(255,255,255,0.05)",
-                color: "#4a6080",
-                border: "1px solid rgba(255,255,255,0.08)",
+                background: "rgba(var(--tint-rgb), 0.05)",
+                color: "var(--text-faint)",
+                border: "1px solid rgba(var(--tint-rgb), 0.08)",
               }}
             >
               {resolving === match.key ? "Guardando..." : "⚡ Confirmar resultado"}

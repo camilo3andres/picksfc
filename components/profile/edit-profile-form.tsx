@@ -60,9 +60,9 @@ export default function EditProfileForm({
   }
 
   const inputBase = {
-    background: "rgba(255,255,255,0.04)",
-    border: "1px solid rgba(255,255,255,0.08)",
-    color: "#f0f6ff",
+    background: "rgba(var(--tint-rgb), 0.04)",
+    border: "1px solid rgba(var(--tint-rgb), 0.08)",
+    color: "var(--text)",
   } as React.CSSProperties;
 
   return (
@@ -70,7 +70,7 @@ export default function EditProfileForm({
 
       {/* Descripción */}
       <div>
-        <label className="block text-sm font-semibold mb-1.5" style={{ color: "#8fa8cc" }}>
+        <label className="block text-sm font-semibold mb-1.5" style={{ color: "var(--text-2)" }}>
           Descripción
         </label>
         <textarea
@@ -82,77 +82,77 @@ export default function EditProfileForm({
           className="w-full rounded-xl px-4 py-3 text-sm resize-none outline-none"
           style={inputBase}
         />
-        <p className="text-xs mt-1 text-right" style={{ color: "#5a7a9a" }}>{bio.length}/160</p>
+        <p className="text-xs mt-1 text-right" style={{ color: "var(--text-muted)" }}>{bio.length}/160</p>
       </div>
 
       {/* Instagram */}
       <div>
-        <label className="block text-sm font-semibold mb-1.5" style={{ color: "#8fa8cc" }}>
+        <label className="block text-sm font-semibold mb-1.5" style={{ color: "var(--text-2)" }}>
           Instagram
         </label>
         <div className="flex items-center gap-1 rounded-xl px-4 py-3" style={inputBase}>
-          <span className="text-sm flex-shrink-0" style={{ color: "#5a7a9a" }}>instagram.com/</span>
+          <span className="text-sm flex-shrink-0" style={{ color: "var(--text-muted)" }}>instagram.com/</span>
           <input
             type="text"
             value={instagram}
             onChange={(e) => setInstagram(e.target.value.replace(/[^a-zA-Z0-9._]/g, ""))}
             placeholder="tu_usuario"
             className="flex-1 bg-transparent outline-none text-sm min-w-0"
-            style={{ color: "#f0f6ff" }}
+            style={{ color: "var(--text)" }}
           />
         </div>
       </div>
 
       {/* TikTok */}
       <div>
-        <label className="block text-sm font-semibold mb-1.5" style={{ color: "#8fa8cc" }}>
+        <label className="block text-sm font-semibold mb-1.5" style={{ color: "var(--text-2)" }}>
           TikTok
         </label>
         <div className="flex items-center gap-1 rounded-xl px-4 py-3" style={inputBase}>
-          <span className="text-sm flex-shrink-0" style={{ color: "#5a7a9a" }}>tiktok.com/@</span>
+          <span className="text-sm flex-shrink-0" style={{ color: "var(--text-muted)" }}>tiktok.com/@</span>
           <input
             type="text"
             value={tiktok}
             onChange={(e) => setTiktok(e.target.value.replace(/[^a-zA-Z0-9._]/g, ""))}
             placeholder="tu_usuario"
             className="flex-1 bg-transparent outline-none text-sm min-w-0"
-            style={{ color: "#f0f6ff" }}
+            style={{ color: "var(--text)" }}
           />
         </div>
       </div>
 
       {/* Twitter / X */}
       <div>
-        <label className="block text-sm font-semibold mb-1.5" style={{ color: "#8fa8cc" }}>
+        <label className="block text-sm font-semibold mb-1.5" style={{ color: "var(--text-2)" }}>
           X / Twitter
         </label>
         <div className="flex items-center gap-1 rounded-xl px-4 py-3" style={inputBase}>
-          <span className="text-sm flex-shrink-0" style={{ color: "#5a7a9a" }}>x.com/</span>
+          <span className="text-sm flex-shrink-0" style={{ color: "var(--text-muted)" }}>x.com/</span>
           <input
             type="text"
             value={twitter}
             onChange={(e) => setTwitter(e.target.value.replace(/[^a-zA-Z0-9_]/g, ""))}
             placeholder="tu_usuario"
             className="flex-1 bg-transparent outline-none text-sm min-w-0"
-            style={{ color: "#f0f6ff" }}
+            style={{ color: "var(--text)" }}
           />
         </div>
       </div>
 
       {/* Telegram */}
       <div>
-        <label className="block text-sm font-semibold mb-1.5" style={{ color: "#8fa8cc" }}>
+        <label className="block text-sm font-semibold mb-1.5" style={{ color: "var(--text-2)" }}>
           Telegram
         </label>
         <div className="flex items-center gap-1 rounded-xl px-4 py-3" style={inputBase}>
-          <span className="text-sm flex-shrink-0" style={{ color: "#5a7a9a" }}>t.me/</span>
+          <span className="text-sm flex-shrink-0" style={{ color: "var(--text-muted)" }}>t.me/</span>
           <input
             type="text"
             value={telegram}
             onChange={(e) => setTelegram(e.target.value.replace(/[^a-zA-Z0-9_]/g, ""))}
             placeholder="tu_usuario_o_canal"
             className="flex-1 bg-transparent outline-none text-sm min-w-0"
-            style={{ color: "#f0f6ff" }}
+            style={{ color: "var(--text)" }}
           />
         </div>
       </div>
@@ -166,7 +166,7 @@ export default function EditProfileForm({
           type="button"
           onClick={() => router.back()}
           className="flex-1 py-3 rounded-xl text-sm font-bold transition-all"
-          style={{ background: "rgba(255,255,255,0.05)", color: "#6b87ab", border: "1px solid rgba(255,255,255,0.08)" }}
+          style={{ background: "rgba(var(--tint-rgb), 0.05)", color: "var(--text-3)", border: "1px solid rgba(var(--tint-rgb), 0.08)" }}
         >
           Cancelar
         </button>
@@ -175,8 +175,8 @@ export default function EditProfileForm({
           disabled={loading}
           className="flex-1 py-3 rounded-xl text-sm font-black transition-all"
           style={{
-            background: loading ? "rgba(34,197,94,0.30)" : "#22c55e",
-            color: "#0f1d35",
+            background: loading ? "rgba(var(--primary-rgb), 0.30)" : "var(--primary)",
+            color: "var(--nav)",
           }}
         >
           {loading ? "Guardando..." : "Guardar cambios"}

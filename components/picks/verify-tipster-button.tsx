@@ -34,9 +34,9 @@ export default function VerifyTipsterButton({ userId, isVerified }: Props) {
         color: "#fbbf24",
         border: "1px solid rgba(251,191,36,0.35)",
       } : {
-        background: "rgba(255,255,255,0.04)",
-        color: "#4a6080",
-        border: "1px solid rgba(255,255,255,0.10)",
+        background: "rgba(var(--tint-rgb), 0.04)",
+        color: "var(--text-faint)",
+        border: "1px solid rgba(var(--tint-rgb), 0.10)",
       }}
     >
       {saving ? "..." : verified ? "✓ Verificado" : "Verificar"}

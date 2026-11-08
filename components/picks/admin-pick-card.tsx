@@ -86,7 +86,7 @@ export default function AdminPickCard({ pick }: Props) {
 
   const statusBadge = {
     pending:   { label: "⏳ Pendiente",  style: { background: "rgba(251,191,36,0.12)",  color: "#fbbf24", border: "1px solid rgba(251,191,36,0.25)"  } },
-    correct:   { label: "✅ Correcto",   style: { background: "rgba(74,222,128,0.12)",  color: "#4ade80", border: "1px solid rgba(74,222,128,0.25)"   } },
+    correct:   { label: "✅ Correcto",   style: { background: "rgba(var(--success-rgb), 0.12)",  color: "var(--success)", border: "1px solid rgba(var(--success-rgb), 0.25)"   } },
     incorrect: { label: "❌ Incorrecto", style: { background: "rgba(248,113,113,0.12)", color: "#f87171", border: "1px solid rgba(248,113,113,0.25)"  } },
   }[status];
 
@@ -96,14 +96,14 @@ export default function AdminPickCard({ pick }: Props) {
 
   return (
     <div className="rounded-2xl p-4 space-y-3" style={{
-      background: "linear-gradient(160deg, #1f2f48 0%, #182438 100%)",
-      border: "1px solid rgba(255,255,255,0.07)",
+      background: "linear-gradient(160deg, var(--card-top) 0%, var(--card-bottom) 100%)",
+      border: "1px solid rgba(var(--tint-rgb), 0.07)",
     }}>
       {/* Header */}
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-bold" style={{ color: "#8fa8cc" }}>@{pick.profiles.username}</span>
-          <span className="text-xs px-2 py-0.5 rounded-full font-semibold" style={{ background: "rgba(255,255,255,0.05)", color: "#4a6080" }}>
+          <span className="text-sm font-bold" style={{ color: "var(--text-2)" }}>@{pick.profiles.username}</span>
+          <span className="text-xs px-2 py-0.5 rounded-full font-semibold" style={{ background: "rgba(var(--tint-rgb), 0.05)", color: "var(--text-faint)" }}>
             {pick.league}
           </span>
         </div>
@@ -125,18 +125,18 @@ export default function AdminPickCard({ pick }: Props) {
 
       {/* Partido + marcador actual */}
       <div className="flex items-center justify-between rounded-xl px-4 py-3 gap-3" style={{
-        background: "rgba(255,255,255,0.04)",
-        border: "1px solid rgba(255,255,255,0.06)",
+        background: "rgba(var(--tint-rgb), 0.04)",
+        border: "1px solid rgba(var(--tint-rgb), 0.06)",
       }}>
-        <span className="font-black text-sm flex-1" style={{ color: "#f0f6ff" }}>{pick.home_team}</span>
+        <span className="font-black text-sm flex-1" style={{ color: "var(--text)" }}>{pick.home_team}</span>
         {hasScore ? (
-          <span className="font-black text-base flex-shrink-0" style={{ color: "#f0f6ff" }}>
+          <span className="font-black text-base flex-shrink-0" style={{ color: "var(--text)" }}>
             {pick.home_score} - {pick.away_score}
           </span>
         ) : (
-          <span className="font-black text-xs flex-shrink-0" style={{ color: "#3a5070" }}>VS</span>
+          <span className="font-black text-xs flex-shrink-0" style={{ color: "var(--text-dim)" }}>VS</span>
         )}
-        <span className="font-black text-sm flex-1 text-right" style={{ color: "#f0f6ff" }}>{pick.away_team}</span>
+        <span className="font-black text-sm flex-1 text-right" style={{ color: "var(--text)" }}>{pick.away_team}</span>
       </div>
 
       {/* Pronóstico + fecha */}
@@ -144,13 +144,13 @@ export default function AdminPickCard({ pick }: Props) {
         <span className="text-xs px-3 py-1 rounded-full font-black" style={PREDICTION_STYLE[pick.prediction]}>
           {PREDICTION_LABEL[pick.prediction]}
         </span>
-        <span className="text-xs ml-auto" style={{ color: "#4a6080" }}>
+        <span className="text-xs ml-auto" style={{ color: "var(--text-faint)" }}>
           {parseLocalDate(pick.match_date).toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" })}
         </span>
       </div>
 
       {pick.reasoning && (
-        <p className="text-xs italic pl-3" style={{ color: "#6b87ab", borderLeft: "2px solid rgba(255,255,255,0.08)" }}>
+        <p className="text-xs italic pl-3" style={{ color: "var(--text-3)", borderLeft: "2px solid rgba(var(--tint-rgb), 0.08)" }}>
           "{pick.reasoning}"
         </p>
       )}
@@ -158,36 +158,36 @@ export default function AdminPickCard({ pick }: Props) {
       {/* Editor de marcador (solo si ya tiene score) */}
       {hasScore && editScore && (
         <div className="flex items-center gap-2 rounded-xl px-3 py-2.5" style={{
-          background: "rgba(255,255,255,0.04)",
-          border: "1px solid rgba(255,255,255,0.10)",
+          background: "rgba(var(--tint-rgb), 0.04)",
+          border: "1px solid rgba(var(--tint-rgb), 0.10)",
         }}>
-          <span className="text-xs font-semibold flex-1" style={{ color: "#6b87ab" }}>Corregir marcador:</span>
+          <span className="text-xs font-semibold flex-1" style={{ color: "var(--text-3)" }}>Corregir marcador:</span>
           <input
             type="number" min={0} max={99}
             value={homeScore}
             onChange={(e) => setHomeScore(e.target.value)}
             className="w-10 text-center font-black text-sm rounded-lg py-1 outline-none"
-            style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "#f0f6ff" }}
+            style={{ background: "rgba(var(--tint-rgb), 0.08)", border: "1px solid rgba(var(--tint-rgb), 0.15)", color: "var(--text)" }}
           />
-          <span className="font-black text-xs" style={{ color: "#3a5070" }}>-</span>
+          <span className="font-black text-xs" style={{ color: "var(--text-dim)" }}>-</span>
           <input
             type="number" min={0} max={99}
             value={awayScore}
             onChange={(e) => setAwayScore(e.target.value)}
             className="w-10 text-center font-black text-sm rounded-lg py-1 outline-none"
-            style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "#f0f6ff" }}
+            style={{ background: "rgba(var(--tint-rgb), 0.08)", border: "1px solid rgba(var(--tint-rgb), 0.15)", color: "var(--text)" }}
           />
           <button
             onClick={saveScore}
             disabled={saving}
             className="px-3 py-1 rounded-lg text-xs font-black transition-all disabled:opacity-40"
-            style={{ background: "linear-gradient(135deg, #22c55e, #16a34a)", color: "#fff" }}
+            style={{ background: "linear-gradient(135deg, var(--primary), var(--primary-strong))", color: "#fff" }}
           >
             {saving ? "..." : "Guardar"}
           </button>
           <button
             onClick={() => { setEditScore(false); setHomeScore(String(pick.home_score ?? "")); setAwayScore(String(pick.away_score ?? "")); }}
-            className="text-xs" style={{ color: "#4a6080" }}
+            className="text-xs" style={{ color: "var(--text-faint)" }}
           >
             ✕
           </button>
@@ -196,12 +196,12 @@ export default function AdminPickCard({ pick }: Props) {
 
       {/* Botones — solo para picks pendientes */}
       {status === "pending" && (
-        <div className="flex gap-2 pt-1" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+        <div className="flex gap-2 pt-1" style={{ borderTop: "1px solid rgba(var(--tint-rgb), 0.06)" }}>
           <button
             disabled={saving}
             onClick={() => updateStatus("correct")}
             className="flex-1 py-2 rounded-xl text-xs font-black transition-all disabled:opacity-40"
-            style={{ background: "rgba(74,222,128,0.10)", color: "#4ade80", border: "1px solid rgba(74,222,128,0.25)" }}
+            style={{ background: "rgba(var(--success-rgb), 0.10)", color: "var(--success)", border: "1px solid rgba(var(--success-rgb), 0.25)" }}
           >
             ✓ Correcto
           </button>

@@ -129,19 +129,19 @@ export default function NewPickPage() {
 
       {/* Header */}
       <div className="mb-5">
-        <h1 className="text-2xl font-black flex items-center gap-2" style={{ color: "#f0f6ff" }}>
+        <h1 className="text-2xl font-black flex items-center gap-2" style={{ color: "var(--text)" }}>
           <Image src="/icon.png" alt="" width={28} height={28} className="inline-block" />
-          <span><span style={{ color: "#4ade80" }}>Nuevo</span> pick</span>
+          <span><span style={{ color: "var(--primary-light)" }}>Nuevo</span> pick</span>
         </h1>
-        <p className="text-sm mt-0.5" style={{ color: "#4a6080" }}>Publicá tu pronóstico y compite con la comunidad</p>
+        <p className="text-sm mt-0.5" style={{ color: "var(--text-faint)" }}>Publicá tu pronóstico y compite con la comunidad</p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 
         {/* Preview del partido */}
         <div className="rounded-2xl p-4" style={{
-          background: "linear-gradient(160deg, #1f2f48 0%, #182438 100%)",
-          border:     "1px solid rgba(255,255,255,0.07)",
+          background: "linear-gradient(160deg, var(--card-top) 0%, var(--card-bottom) 100%)",
+          border:     "1px solid rgba(var(--tint-rgb), 0.07)",
           boxShadow:  "0 8px 32px rgba(0,0,0,0.35)",
         }}>
           <div className="flex items-center justify-between gap-4">
@@ -151,9 +151,9 @@ export default function NewPickPage() {
               {homeTeam.logo ? (
                 <Image src={homeTeam.logo} alt={homeTeam.name} width={52} height={52} className="object-contain mx-auto mb-2 drop-shadow-md" unoptimized />
               ) : (
-                <div className="rounded-full mx-auto mb-2 flex items-center justify-center text-2xl" style={{ background: "rgba(255,255,255,0.04)", width: 52, height: 52 }}>⚽</div>
+                <div className="rounded-full mx-auto mb-2 flex items-center justify-center text-2xl" style={{ background: "rgba(var(--tint-rgb), 0.04)", width: 52, height: 52 }}>⚽</div>
               )}
-              <p className="text-sm font-black" style={{ color: homeTeam.name ? "#f0f6ff" : "#2a3d5a" }}>
+              <p className="text-sm font-black" style={{ color: homeTeam.name ? "var(--text)" : "var(--text-dim)" }}>
                 {homeTeam.name || "Local"}
               </p>
             </div>
@@ -166,15 +166,15 @@ export default function NewPickPage() {
                   {predInfo.label}
                 </span>
               ) : (
-                <span className="font-black text-sm" style={{ color: "#1e3050", letterSpacing: "0.15em" }}>VS</span>
+                <span className="font-black text-sm" style={{ color: "var(--text-dim)", letterSpacing: "0.15em" }}>VS</span>
               )}
               {selectedDate && (
-                <span className="text-xs" style={{ color: "#3a5070" }}>
+                <span className="text-xs" style={{ color: "var(--text-dim)" }}>
                   {new Date(selectedDate + "T12:00:00").toLocaleDateString("es-ES", { day: "numeric", month: "short" })}
                 </span>
               )}
               {league && (
-                <span className="text-xs text-center px-2" style={{ color: "#2a4565", maxWidth: 100, lineHeight: 1.2 }}>
+                <span className="text-xs text-center px-2" style={{ color: "var(--text-dim)", maxWidth: 100, lineHeight: 1.2 }}>
                   {league}
                 </span>
               )}
@@ -185,9 +185,9 @@ export default function NewPickPage() {
               {awayTeam.logo ? (
                 <Image src={awayTeam.logo} alt={awayTeam.name} width={52} height={52} className="object-contain mx-auto mb-2 drop-shadow-md" unoptimized />
               ) : (
-                <div className="rounded-full mx-auto mb-2 flex items-center justify-center text-2xl" style={{ background: "rgba(255,255,255,0.04)", width: 52, height: 52 }}>⚽</div>
+                <div className="rounded-full mx-auto mb-2 flex items-center justify-center text-2xl" style={{ background: "rgba(var(--tint-rgb), 0.04)", width: 52, height: 52 }}>⚽</div>
               )}
-              <p className="text-sm font-black" style={{ color: awayTeam.name ? "#f0f6ff" : "#2a3d5a" }}>
+              <p className="text-sm font-black" style={{ color: awayTeam.name ? "var(--text)" : "var(--text-dim)" }}>
                 {awayTeam.name || "Visitante"}
               </p>
             </div>
@@ -202,7 +202,7 @@ export default function NewPickPage() {
 
         {/* Predicción */}
         <div className="space-y-1.5">
-          <label className="text-sm font-semibold" style={{ color: "#8fa8cc" }}>¿Quién va a ganar?</label>
+          <label className="text-sm font-semibold" style={{ color: "var(--text-2)" }}>¿Quién va a ganar?</label>
           <div className="space-y-2">
             <div className="grid grid-cols-3 gap-2">
               {PREDICTIONS_ROW1.map((opt) => {
@@ -220,9 +220,9 @@ export default function NewPickPage() {
                       transform:  "scale(1.03)",
                       border:     "1px solid transparent",
                     } : {
-                      background: "rgba(255,255,255,0.04)",
-                      color:      "#4a6080",
-                      border:     "1px solid rgba(255,255,255,0.08)",
+                      background: "rgba(var(--tint-rgb), 0.04)",
+                      color:      "var(--text-faint)",
+                      border:     "1px solid rgba(var(--tint-rgb), 0.08)",
                       transform:  "scale(1)",
                     }}
                   >
@@ -247,9 +247,9 @@ export default function NewPickPage() {
                       transform:  "scale(1.03)",
                       border:     "1px solid transparent",
                     } : {
-                      background: "rgba(255,255,255,0.04)",
-                      color:      "#4a6080",
-                      border:     "1px solid rgba(255,255,255,0.08)",
+                      background: "rgba(var(--tint-rgb), 0.04)",
+                      color:      "var(--text-faint)",
+                      border:     "1px solid rgba(var(--tint-rgb), 0.08)",
                       transform:  "scale(1)",
                     }}
                   >
@@ -264,21 +264,21 @@ export default function NewPickPage() {
 
         {/* Análisis */}
         <div className="space-y-1.5">
-          <label className="text-sm font-semibold" style={{ color: "#8fa8cc" }}>
-            ¿Qué más va a pasar? <span style={{ color: "#2e4060", fontWeight: 400 }}>(opcional)</span>
+          <label className="text-sm font-semibold" style={{ color: "var(--text-2)" }}>
+            Tu análisis <span style={{ color: "var(--text-dim)", fontWeight: 400 }}>(opcional)</span>
           </label>
           <textarea
-            placeholder="Ej: +2.5 goles, más de 9 esquinas, ambos anotan... compartí tu análisis"
+            placeholder="¿Por qué este pick? Bajas, rachas, cómo llegan los equipos…"
             rows={3}
-            className="w-full text-sm outline-none rounded-xl px-3 py-2.5 resize-none transition-all placeholder:text-[#4a6080]"
+            className="w-full text-sm outline-none rounded-xl px-3 py-2.5 resize-none transition-all placeholder:text-[var(--text-faint)]"
             style={{
-              background: "rgba(255,255,255,0.08)",
-              border:     "1px solid rgba(255,255,255,0.12)",
-              color:      "#f0f6ff",
+              background: "rgba(var(--tint-rgb), 0.08)",
+              border:     "1px solid rgba(var(--tint-rgb), 0.12)",
+              color:      "var(--text)",
             }}
             {...register("reasoning")}
-            onFocus={(e) => { e.target.style.border = "1px solid rgba(34,197,94,0.40)"; e.target.style.boxShadow = "0 0 0 3px rgba(34,197,94,0.07)"; }}
-            onBlur={(e)  => { e.target.style.border = "1px solid rgba(255,255,255,0.12)"; e.target.style.boxShadow = "none"; }}
+            onFocus={(e) => { e.target.style.border = "1px solid rgba(var(--primary-rgb), 0.40)"; e.target.style.boxShadow = "0 0 0 3px rgba(var(--primary-rgb), 0.07)"; }}
+            onBlur={(e)  => { e.target.style.border = "1px solid rgba(var(--tint-rgb), 0.12)"; e.target.style.boxShadow = "none"; }}
           />
           {errors.reasoning && <p className="text-red-400 text-xs">{errors.reasoning.message}</p>}
         </div>
@@ -291,7 +291,7 @@ export default function NewPickPage() {
             type="button"
             onClick={() => router.back()}
             className="flex-1 py-3 rounded-xl text-sm font-semibold transition-all"
-            style={{ background: "rgba(255,255,255,0.04)", color: "#6b87ab", border: "1px solid rgba(255,255,255,0.07)" }}
+            style={{ background: "rgba(var(--tint-rgb), 0.04)", color: "var(--text-3)", border: "1px solid rgba(var(--tint-rgb), 0.07)" }}
           >
             Cancelar
           </button>
@@ -300,9 +300,9 @@ export default function NewPickPage() {
             disabled={loading}
             className="flex-1 py-3 rounded-xl text-sm font-black transition-all"
             style={{
-              background: loading ? "rgba(34,197,94,0.4)" : "linear-gradient(135deg, #22c55e, #16a34a)",
+              background: loading ? "rgba(var(--primary-rgb), 0.4)" : "linear-gradient(135deg, var(--primary), var(--primary-strong))",
               color:      "#fff",
-              boxShadow:  loading ? "none" : "0 4px 16px rgba(34,197,94,0.30)",
+              boxShadow:  loading ? "none" : "0 4px 16px rgba(var(--primary-rgb), 0.30)",
               border:     "1px solid transparent",
             }}
           >

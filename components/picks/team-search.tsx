@@ -64,14 +64,14 @@ export default function TeamSearch({ label, placeholder, onSelect }: Props) {
 
   return (
     <div className="space-y-1.5">
-      <label className="text-sm font-semibold" style={{ color: "#8fa8cc" }}>{label}</label>
+      <label className="text-sm font-semibold" style={{ color: "var(--text-2)" }}>{label}</label>
 
       {selected ? (
         <div
           className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all"
           style={{
-            background: "linear-gradient(135deg, rgba(34,197,94,0.10), rgba(22,163,74,0.06))",
-            border: "1px solid rgba(34,197,94,0.30)",
+            background: "linear-gradient(135deg, rgba(var(--primary-rgb), 0.10), rgba(var(--primary-strong-rgb), 0.06))",
+            border: "1px solid rgba(var(--primary-rgb), 0.30)",
           }}
         >
           {selected.logo ? (
@@ -81,13 +81,13 @@ export default function TeamSearch({ label, placeholder, onSelect }: Props) {
           )}
           <div className="flex-1 min-w-0">
             <p className="text-white text-sm font-bold truncate">{selected.name}</p>
-            <p className="text-xs" style={{ color: "#4ade80" }}>{selected.league}</p>
+            <p className="text-xs" style={{ color: "var(--primary-light)" }}>{selected.league}</p>
           </div>
           <button
             type="button"
             onClick={handleClear}
             className="w-6 h-6 rounded-full flex items-center justify-center transition-all text-xs font-bold flex-shrink-0"
-            style={{ color: "#6b87ab", background: "rgba(255,255,255,0.06)" }}
+            style={{ color: "var(--text-3)", background: "rgba(var(--tint-rgb), 0.06)" }}
           >
             ✕
           </button>
@@ -103,12 +103,12 @@ export default function TeamSearch({ label, placeholder, onSelect }: Props) {
             placeholder={placeholder}
             className="w-full text-white text-sm outline-none transition-all"
             style={{
-              background: "rgba(255,255,255,0.05)",
-              border: focused ? "1px solid rgba(34,197,94,0.50)" : "1px solid rgba(255,255,255,0.09)",
+              background: "rgba(var(--tint-rgb), 0.05)",
+              border: focused ? "1px solid rgba(var(--primary-rgb), 0.50)" : "1px solid rgba(var(--tint-rgb), 0.09)",
               borderRadius: "12px",
               padding: "10px 14px",
-              color: "#f0f6ff",
-              boxShadow: focused ? "0 0 0 3px rgba(34,197,94,0.08)" : "none",
+              color: "var(--text)",
+              boxShadow: focused ? "0 0 0 3px rgba(var(--primary-rgb), 0.08)" : "none",
             }}
           />
 
@@ -117,9 +117,9 @@ export default function TeamSearch({ label, placeholder, onSelect }: Props) {
             <div
               className="absolute top-full left-0 right-0 mt-1.5 z-50 rounded-xl overflow-hidden"
               style={{
-                background: "linear-gradient(160deg, #1c2d45 0%, #162035 100%)",
-                border: "1px solid rgba(255,255,255,0.10)",
-                boxShadow: "0 16px 48px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.04)",
+                background: "linear-gradient(160deg, var(--card-top) 0%, var(--card-bottom) 100%)",
+                border: "1px solid rgba(var(--tint-rgb), 0.10)",
+                boxShadow: "0 16px 48px rgba(0,0,0,0.55), 0 0 0 1px rgba(var(--tint-rgb), 0.04)",
                 maxHeight: "280px",
                 overflowY: "auto",
                 animation: "dropdownIn 0.18s ease-out forwards",
@@ -127,7 +127,7 @@ export default function TeamSearch({ label, placeholder, onSelect }: Props) {
             >
               {showEmpty ? (
                 <div className="px-4 py-3">
-                  <p className="text-xs" style={{ color: "#4a6080" }}>No encontrado — se usará el nombre que escribiste.</p>
+                  <p className="text-xs" style={{ color: "var(--text-faint)" }}>No encontrado — se usará el nombre que escribiste.</p>
                 </div>
               ) : (
                 Object.entries(grouped).map(([leagueName, teams]) => (
@@ -138,7 +138,7 @@ export default function TeamSearch({ label, placeholder, onSelect }: Props) {
                       style={{ background: "rgba(10,20,40,0.80)", backdropFilter: "blur(8px)" }}
                     >
                       <span className="text-xs">{LEAGUE_ICON[leagueName] ?? "🏆"}</span>
-                      <span className="text-xs font-bold tracking-wide uppercase" style={{ color: "#4a6080" }}>
+                      <span className="text-xs font-bold tracking-wide uppercase" style={{ color: "var(--text-faint)" }}>
                         {leagueName}
                       </span>
                     </div>
@@ -150,9 +150,9 @@ export default function TeamSearch({ label, placeholder, onSelect }: Props) {
                         type="button"
                         onMouseDown={() => handleSelect(team)}
                         className="flex items-center gap-3 w-full px-3 py-2.5 text-left transition-all"
-                        style={{ borderBottom: "1px solid rgba(255,255,255,0.03)" }}
+                        style={{ borderBottom: "1px solid rgba(var(--tint-rgb), 0.03)" }}
                         onMouseEnter={(e) => {
-                          (e.currentTarget as HTMLButtonElement).style.background = "rgba(34,197,94,0.08)";
+                          (e.currentTarget as HTMLButtonElement).style.background = "rgba(var(--primary-rgb), 0.08)";
                         }}
                         onMouseLeave={(e) => {
                           (e.currentTarget as HTMLButtonElement).style.background = "transparent";

@@ -5,6 +5,7 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { Home, Trophy, PlusCircle, User, Settings, LogOut, Zap } from "lucide-react";
 import { createClient } from "@/lib/supabase";
+import Avatar from "@/components/ui/avatar";
 
 type Props = {
   username: string | null;
@@ -31,7 +32,7 @@ export default function Navbar({ username, isAdmin, isLoggedIn }: Props) {
       <nav
         className="sticky top-0 z-50 border-b border-white/5"
         style={{
-          background: "linear-gradient(180deg, #0f1d35 0%, #0c1829 100%)",
+          background: "linear-gradient(180deg, var(--nav) 0%, var(--nav-2) 100%)",
           backdropFilter: "blur(12px)",
         }}
       >
@@ -39,12 +40,12 @@ export default function Navbar({ username, isAdmin, isLoggedIn }: Props) {
 
           {/* Logo */}
           <Link href="/feed" className="flex items-center gap-2.5 group">
-            <Image src="/icon.png" alt="PicksFC" width={36} height={36} className="rounded-xl transition-transform group-hover:scale-105" style={{ boxShadow: "0 4px 14px rgba(34,197,94,0.35)" }} />
+            <Image src="/icon.png" alt="PicksFC" width={36} height={36} className="rounded-xl transition-transform group-hover:scale-105" style={{ boxShadow: "0 4px 14px rgba(var(--primary-rgb), 0.35)" }} />
             <div className="flex flex-col leading-none">
-              <span className="text-lg font-black tracking-tight" style={{ color: "#f0f6ff" }}>
-                Picks<span style={{ color: "#4ade80" }}>FC</span>
+              <span className="text-lg font-black tracking-tight" style={{ color: "var(--text)" }}>
+                Picks<span style={{ color: "var(--primary-light)" }}>FC</span>
               </span>
-              <span className="text-[9px] font-semibold tracking-widest uppercase" style={{ color: "#4a6080" }}>
+              <span className="text-[9px] font-semibold tracking-widest uppercase" style={{ color: "var(--text-faint)" }}>
                 Pronósticos
               </span>
             </div>
@@ -56,8 +57,8 @@ export default function Navbar({ username, isAdmin, isLoggedIn }: Props) {
               href="/feed"
               className="flex items-center gap-1.5 text-sm px-3.5 py-2 rounded-xl font-medium transition-all"
               style={isActive("/feed")
-                ? { color: "#fff", background: "rgba(74,222,128,0.12)", border: "1px solid rgba(74,222,128,0.2)" }
-                : { color: "#8fa8cc", border: "1px solid transparent" }
+                ? { color: "#fff", background: "rgba(var(--primary-light-rgb), 0.12)", border: "1px solid rgba(var(--primary-light-rgb), 0.2)" }
+                : { color: "var(--text-2)", border: "1px solid transparent" }
               }
             >
               <Home size={14} /> Feed
@@ -68,7 +69,7 @@ export default function Navbar({ username, isAdmin, isLoggedIn }: Props) {
               className="flex items-center gap-1.5 text-sm px-3.5 py-2 rounded-xl font-medium transition-all"
               style={isActive("/leaderboard")
                 ? { color: "#fff", background: "rgba(251,191,36,0.12)", border: "1px solid rgba(251,191,36,0.2)" }
-                : { color: "#8fa8cc", border: "1px solid transparent" }
+                : { color: "var(--text-2)", border: "1px solid transparent" }
               }
             >
               <Trophy size={14} className={isActive("/leaderboard") ? "text-amber-400" : ""} /> Ranking
@@ -91,9 +92,9 @@ export default function Navbar({ username, isAdmin, isLoggedIn }: Props) {
               href="/picks/new"
               className="flex items-center gap-1.5 text-sm px-4 py-2 rounded-xl font-bold transition-all ml-2"
               style={{
-                background: "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)",
+                background: "linear-gradient(135deg, var(--primary) 0%, var(--primary-strong) 100%)",
                 color: "#fff",
-                boxShadow: "0 4px 14px rgba(34,197,94,0.30)",
+                boxShadow: "0 4px 14px rgba(var(--primary-rgb), 0.30)",
               }}
             >
               <Zap size={14} fill="white" /> Nuevo pick
@@ -102,29 +103,24 @@ export default function Navbar({ username, isAdmin, isLoggedIn }: Props) {
             {isLoggedIn ? (
               <>
                 <Link href={`/profile/${username}`} className="flex items-center gap-2 ml-3 pl-3 border-l border-white/10 hover:opacity-80 transition-opacity">
-                  <div
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-black text-white"
-                    style={{ background: "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)", boxShadow: "0 2px 8px rgba(59,130,246,0.35)" }}
-                  >
-                    {username?.[0]?.toUpperCase()}
-                  </div>
+                  {username && <Avatar username={username} size={32} glow />}
                   <div className="flex flex-col leading-none">
-                    <span className="text-xs font-bold" style={{ color: "#f0f6ff" }}>@{username}</span>
-                    <span className="text-[10px]" style={{ color: "#4a6080" }}>Mi perfil</span>
+                    <span className="text-xs font-bold" style={{ color: "var(--text)" }}>@{username}</span>
+                    <span className="text-[10px]" style={{ color: "var(--text-faint)" }}>Mi perfil</span>
                   </div>
                 </Link>
-                <button onClick={handleLogout} className="ml-2 p-1.5 rounded-lg transition-all hover:bg-white/5" style={{ color: "#4a6080" }}>
+                <button onClick={handleLogout} className="ml-2 p-1.5 rounded-lg transition-all hover:bg-white/5" style={{ color: "var(--text-faint)" }}>
                   <LogOut size={14} />
                 </button>
               </>
             ) : (
               <div className="flex items-center gap-2 ml-3 pl-3 border-l border-white/10">
                 <Link href="/login" className="text-sm font-semibold px-3 py-1.5 rounded-xl transition-all"
-                  style={{ color: "#8fa8cc", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+                  style={{ color: "var(--text-2)", background: "rgba(var(--tint-rgb), 0.04)", border: "1px solid rgba(var(--tint-rgb), 0.08)" }}>
                   Iniciar sesión
                 </Link>
                 <Link href="/register" className="text-sm font-bold px-3 py-1.5 rounded-xl transition-all"
-                  style={{ background: "linear-gradient(135deg, #22c55e, #16a34a)", color: "#fff", boxShadow: "0 2px 10px rgba(34,197,94,0.25)" }}>
+                  style={{ background: "linear-gradient(135deg, var(--primary), var(--primary-strong))", color: "#fff", boxShadow: "0 2px 10px rgba(var(--primary-rgb), 0.25)" }}>
                   Registrate
                 </Link>
               </div>
@@ -135,22 +131,17 @@ export default function Navbar({ username, isAdmin, isLoggedIn }: Props) {
           <div className="flex md:hidden items-center gap-2">
             {isLoggedIn ? (
               <Link href={`/profile/${username}`} className="flex items-center gap-2">
-                <div
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-black text-white"
-                  style={{ background: "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)" }}
-                >
-                  {username?.[0]?.toUpperCase()}
-                </div>
-                <span className="text-sm font-semibold" style={{ color: "#8fa8cc" }}>@{username}</span>
+                {username && <Avatar username={username} size={32} />}
+                <span className="text-sm font-semibold" style={{ color: "var(--text-2)" }}>@{username}</span>
               </Link>
             ) : (
               <div className="flex items-center gap-1.5">
                 <Link href="/login" className="text-xs font-semibold px-2.5 py-1.5 rounded-xl"
-                  style={{ color: "#8fa8cc", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.10)" }}>
+                  style={{ color: "var(--text-2)", background: "rgba(var(--tint-rgb), 0.06)", border: "1px solid rgba(var(--tint-rgb), 0.10)" }}>
                   Iniciar sesión
                 </Link>
                 <Link href="/register" className="text-xs font-bold px-2.5 py-1.5 rounded-xl"
-                  style={{ background: "linear-gradient(135deg, #22c55e, #16a34a)", color: "#fff", boxShadow: "0 2px 8px rgba(34,197,94,0.25)" }}>
+                  style={{ background: "linear-gradient(135deg, var(--primary), var(--primary-strong))", color: "#fff", boxShadow: "0 2px 8px rgba(var(--primary-rgb), 0.25)" }}>
                   Registrate
                 </Link>
               </div>
@@ -162,13 +153,13 @@ export default function Navbar({ username, isAdmin, isLoggedIn }: Props) {
       {/* Bottom navbar — mobile */}
       <div
         className="fixed bottom-0 left-0 right-0 z-50 md:hidden border-t border-white/5"
-        style={{ background: "linear-gradient(0deg, #0f1d35 0%, #0c1829 100%)" }}
+        style={{ background: "linear-gradient(0deg, var(--nav) 0%, var(--nav-2) 100%)" }}
       >
         <div className="flex items-center justify-around h-16 px-2">
           <Link
             href="/feed"
             className="flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-xl transition-all"
-            style={isActive("/feed") ? { color: "#4ade80" } : { color: "#3a5070" }}
+            style={isActive("/feed") ? { color: "var(--primary-light)" } : { color: "var(--text-dim)" }}
           >
             <Home size={21} />
             <span className="text-[10px] font-semibold">Feed</span>
@@ -177,7 +168,7 @@ export default function Navbar({ username, isAdmin, isLoggedIn }: Props) {
           <Link
             href="/leaderboard"
             className="flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-xl transition-all"
-            style={isActive("/leaderboard") ? { color: "#fbbf24" } : { color: "#3a5070" }}
+            style={isActive("/leaderboard") ? { color: "#fbbf24" } : { color: "var(--text-dim)" }}
           >
             <Trophy size={21} />
             <span className="text-[10px] font-semibold">Ranking</span>
@@ -186,7 +177,7 @@ export default function Navbar({ username, isAdmin, isLoggedIn }: Props) {
           <Link href="/picks/new" className="flex flex-col items-center gap-0.5 px-3 py-1 -mt-4">
             <div
               className="rounded-2xl p-3 transition-all"
-              style={{ background: "linear-gradient(135deg, #22c55e 0%, #15803d 100%)", boxShadow: "0 4px 16px rgba(34,197,94,0.40)" }}
+              style={{ background: "linear-gradient(135deg, var(--primary) 0%, var(--primary-strong) 100%)", boxShadow: "0 4px 16px rgba(var(--primary-rgb), 0.40)" }}
             >
               <PlusCircle size={22} className="text-white" />
             </div>
@@ -197,7 +188,7 @@ export default function Navbar({ username, isAdmin, isLoggedIn }: Props) {
             <Link
               href="/admin"
               className="flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-xl transition-all"
-              style={isActive("/admin") ? { color: "#fbbf24" } : { color: "#3a5070" }}
+              style={isActive("/admin") ? { color: "#fbbf24" } : { color: "var(--text-dim)" }}
             >
               <Settings size={21} />
               <span className="text-[10px] font-semibold">Admin</span>
@@ -206,7 +197,7 @@ export default function Navbar({ username, isAdmin, isLoggedIn }: Props) {
             <Link
               href={isLoggedIn ? `/profile/${username}` : "/login"}
               className="flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-xl transition-all"
-              style={pathname.startsWith("/profile") ? { color: "#4ade80" } : { color: "#3a5070" }}
+              style={pathname.startsWith("/profile") ? { color: "var(--primary-light)" } : { color: "var(--text-dim)" }}
             >
               <User size={21} />
               <span className="text-[10px] font-semibold">{isLoggedIn ? "Perfil" : "Entrar"}</span>
@@ -218,7 +209,7 @@ export default function Navbar({ username, isAdmin, isLoggedIn }: Props) {
             <button
               onClick={handleLogout}
               className="flex flex-col items-center gap-0.5 px-4 py-1.5"
-              style={{ color: "#3a5070" }}
+              style={{ color: "var(--text-dim)" }}
             >
               <LogOut size={21} />
               <span className="text-[10px] font-semibold">Salir</span>
@@ -227,7 +218,7 @@ export default function Navbar({ username, isAdmin, isLoggedIn }: Props) {
             <Link
               href="/register"
               className="flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-xl transition-all"
-              style={{ color: "#3a5070" }}
+              style={{ color: "var(--text-dim)" }}
             >
               <PlusCircle size={21} />
               <span className="text-[10px] font-semibold">Registrate</span>

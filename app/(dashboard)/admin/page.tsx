@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase-server";
+import { createClient, getSessionUser } from "@/lib/supabase-server";
 import AdminMatchResolver from "@/components/picks/admin-match-resolver";
 import AdminPickCard from "@/components/picks/admin-pick-card";
 import AutoResolveButton from "@/components/picks/auto-resolve-button";
@@ -7,7 +7,7 @@ import VerifyTipsterButton from "@/components/picks/verify-tipster-button";
 
 export default async function AdminPage() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getSessionUser();
   if (!user) redirect("/login");
 
   const { data: profile } = await supabase
@@ -53,10 +53,10 @@ export default async function AdminPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-black flex items-center gap-2" style={{ color: "#f0f6ff" }}>
-            ⚙️ <span style={{ color: "#4ade80" }}>Panel</span> Admin
+          <h1 className="text-2xl font-black flex items-center gap-2" style={{ color: "var(--text)" }}>
+            ⚙️ <span style={{ color: "var(--primary-light)" }}>Panel</span> Admin
           </h1>
-          <p className="text-sm mt-0.5" style={{ color: "#4a6080" }}>
+          <p className="text-sm mt-0.5" style={{ color: "var(--text-faint)" }}>
             Gestión completa de picks y comunidad
           </p>
         </div>
@@ -74,18 +74,18 @@ export default async function AdminPage() {
       {/* Stats principales */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
         {[
-          { label: "Total picks",  value: allPicks.length, color: "#8fa8cc", border: "rgba(143,168,204,0.15)" },
+          { label: "Total picks",  value: allPicks.length, color: "var(--text-2)", border: "rgba(var(--text-2-rgb), 0.15)" },
           { label: "Pendientes",   value: pending.length,  color: "#fbbf24", border: "rgba(251,191,36,0.20)"  },
-          { label: "Correctos",    value: correct.length,  color: "#4ade80", border: "rgba(74,222,128,0.20)"  },
+          { label: "Correctos",    value: correct.length,  color: "var(--success)", border: "rgba(var(--success-rgb), 0.20)"  },
           { label: "Incorrectos",  value: incorrect.length,color: "#f87171", border: "rgba(248,113,113,0.20)" },
-          { label: "% Acierto",    value: `${accuracy}%`,  color: accuracy >= 60 ? "#4ade80" : accuracy >= 45 ? "#fbbf24" : "#f87171", border: "rgba(255,255,255,0.10)" },
+          { label: "% Acierto",    value: `${accuracy}%`,  color: accuracy >= 60 ? "var(--success)" : accuracy >= 45 ? "#fbbf24" : "#f87171", border: "rgba(var(--tint-rgb), 0.10)" },
         ].map(({ label, value, color, border }) => (
           <div key={label} className="rounded-xl px-3 py-3 text-center" style={{
-            background: "linear-gradient(160deg, #1f2f48 0%, #182438 100%)",
+            background: "linear-gradient(160deg, var(--card-top) 0%, var(--card-bottom) 100%)",
             border: `1px solid ${border}`,
           }}>
             <p className="text-2xl font-black" style={{ color }}>{value}</p>
-            <p className="text-xs font-medium mt-0.5" style={{ color: "#4a6080" }}>{label}</p>
+            <p className="text-xs font-medium mt-0.5" style={{ color: "var(--text-faint)" }}>{label}</p>
           </div>
         ))}
       </div>
@@ -93,14 +93,14 @@ export default async function AdminPage() {
       {/* Auto-resolve */}
       {pending.length > 0 && (
         <div className="rounded-2xl p-4 space-y-3" style={{
-          background: "linear-gradient(160deg, #1a2d48 0%, #131e35 100%)",
+          background: "linear-gradient(160deg, var(--card-top) 0%, var(--card-bottom) 100%)",
           border: "1px solid rgba(59,130,246,0.20)",
         }}>
           <div>
-            <h2 className="font-black text-base" style={{ color: "#f0f6ff" }}>
+            <h2 className="font-black text-base" style={{ color: "var(--text)" }}>
               🤖 Auto-resolver
             </h2>
-            <p className="text-xs mt-0.5" style={{ color: "#4a6080" }}>
+            <p className="text-xs mt-0.5" style={{ color: "var(--text-faint)" }}>
               Consulta football-data.org y resuelve automáticamente los picks con partido terminado
             </p>
           </div>
@@ -111,12 +111,12 @@ export default async function AdminPage() {
       {/* Resolver manualmente */}
       {pending.length > 0 && (
         <div className="space-y-3">
-          <div className="flex items-center gap-2 pb-3" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+          <div className="flex items-center gap-2 pb-3" style={{ borderBottom: "1px solid rgba(var(--tint-rgb), 0.06)" }}>
             <div>
-              <h2 className="font-black text-lg" style={{ color: "#f0f6ff" }}>
+              <h2 className="font-black text-lg" style={{ color: "var(--text)" }}>
                 ⚡ Resolver manualmente
               </h2>
-              <p className="text-xs mt-0.5" style={{ color: "#4a6080" }}>
+              <p className="text-xs mt-0.5" style={{ color: "var(--text-faint)" }}>
                 Ingresá el marcador y todos los picks del partido se actualizan
               </p>
             </div>
@@ -128,7 +128,7 @@ export default async function AdminPage() {
       {/* Picks pendientes individuales */}
       {pending.length > 0 && (
         <div className="space-y-3">
-          <h2 className="font-black text-base pb-3 flex items-center gap-2" style={{ color: "#f0f6ff", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+          <h2 className="font-black text-base pb-3 flex items-center gap-2" style={{ color: "var(--text)", borderBottom: "1px solid rgba(var(--tint-rgb), 0.06)" }}>
             ⏳ Pendientes individuales
             <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: "rgba(251,191,36,0.12)", color: "#fbbf24", border: "1px solid rgba(251,191,36,0.25)" }}>
               {pending.length}
@@ -143,20 +143,20 @@ export default async function AdminPage() {
       {/* Top ligas */}
       {topLeagues.length > 0 && (
         <div className="rounded-2xl p-4 space-y-3" style={{
-          background: "linear-gradient(160deg, #1f2f48 0%, #182438 100%)",
-          border: "1px solid rgba(255,255,255,0.07)",
+          background: "linear-gradient(160deg, var(--card-top) 0%, var(--card-bottom) 100%)",
+          border: "1px solid rgba(var(--tint-rgb), 0.07)",
         }}>
-          <h2 className="font-black text-base" style={{ color: "#f0f6ff" }}>📊 Picks por liga</h2>
+          <h2 className="font-black text-base" style={{ color: "var(--text)" }}>📊 Picks por liga</h2>
           <div className="space-y-2">
             {topLeagues.map(([league, count]) => {
               const pct = Math.round((count / allPicks.length) * 100);
               return (
                 <div key={league} className="space-y-1">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="font-semibold truncate" style={{ color: "#8fa8cc", maxWidth: "70%" }}>{league}</span>
-                    <span className="font-black" style={{ color: "#f0f6ff" }}>{count} <span style={{ color: "#4a6080" }}>({pct}%)</span></span>
+                    <span className="font-semibold truncate" style={{ color: "var(--text-2)", maxWidth: "70%" }}>{league}</span>
+                    <span className="font-black" style={{ color: "var(--text)" }}>{count} <span style={{ color: "var(--text-faint)" }}>({pct}%)</span></span>
                   </div>
-                  <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.06)" }}>
+                  <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(var(--tint-rgb), 0.06)" }}>
                     <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: "linear-gradient(90deg, #3b82f6, #1d4ed8)" }} />
                   </div>
                 </div>
@@ -169,13 +169,13 @@ export default async function AdminPage() {
       {/* Usuarios */}
       {allUsers.length > 0 && (
         <div className="space-y-3">
-          <h2 className="font-black text-base pb-3 flex items-center gap-2" style={{ color: "#f0f6ff", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+          <h2 className="font-black text-base pb-3 flex items-center gap-2" style={{ color: "var(--text)", borderBottom: "1px solid rgba(var(--tint-rgb), 0.06)" }}>
             👥 Tipsters
-            <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: "rgba(255,255,255,0.06)", color: "#6b87ab" }}>
+            <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: "rgba(var(--tint-rgb), 0.06)", color: "var(--text-3)" }}>
               {allUsers.length}
             </span>
           </h2>
-          <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(255,255,255,0.07)" }}>
+          <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(var(--tint-rgb), 0.07)" }}>
             {allUsers.map((u, i) => {
               const userAcc = u.total_picks > 0 ? Math.round((u.correct_picks / u.total_picks) * 100) : 0;
               return (
@@ -183,15 +183,15 @@ export default async function AdminPage() {
                   key={u.id}
                   className="flex items-center gap-3 px-4 py-3"
                   style={{
-                    background: i % 2 === 0 ? "rgba(255,255,255,0.02)" : "transparent",
-                    borderBottom: i < allUsers.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none",
+                    background: i % 2 === 0 ? "rgba(var(--tint-rgb), 0.02)" : "transparent",
+                    borderBottom: i < allUsers.length - 1 ? "1px solid rgba(var(--tint-rgb), 0.04)" : "none",
                   }}
                 >
-                  <span className="text-sm font-black w-5 text-center" style={{ color: "#2a4060" }}>#{i + 1}</span>
+                  <span className="text-sm font-black w-5 text-center" style={{ color: "var(--text-dim)" }}>#{i + 1}</span>
                   <span className="flex-1 text-sm font-bold" style={{ color: "#e8f0fe" }}>@{u.username}</span>
                   <div className="flex items-center gap-2 text-xs">
-                    <span style={{ color: "#4a6080" }}>{u.total_picks} picks</span>
-                    <span className="font-black" style={{ color: userAcc >= 60 ? "#4ade80" : userAcc >= 45 ? "#fbbf24" : "#f87171" }}>
+                    <span style={{ color: "var(--text-faint)" }}>{u.total_picks} picks</span>
+                    <span className="font-black" style={{ color: userAcc >= 60 ? "var(--success)" : userAcc >= 45 ? "#fbbf24" : "#f87171" }}>
                       {userAcc}%
                     </span>
                     <VerifyTipsterButton userId={u.id} isVerified={u.is_verified ?? false} />
@@ -206,9 +206,9 @@ export default async function AdminPage() {
       {/* Picks resueltos */}
       {resolved > 0 && (
         <div className="space-y-3">
-          <h2 className="font-black text-base pb-3 flex items-center gap-2" style={{ color: "#f0f6ff", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+          <h2 className="font-black text-base pb-3 flex items-center gap-2" style={{ color: "var(--text)", borderBottom: "1px solid rgba(var(--tint-rgb), 0.06)" }}>
             ✅ Resueltos
-            <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: "rgba(74,222,128,0.10)", color: "#4ade80", border: "1px solid rgba(74,222,128,0.20)" }}>
+            <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: "rgba(var(--success-rgb), 0.10)", color: "var(--success)", border: "1px solid rgba(var(--success-rgb), 0.20)" }}>
               {resolved}
             </span>
           </h2>
@@ -220,11 +220,11 @@ export default async function AdminPage() {
 
       {allPicks.length === 0 && (
         <div className="text-center py-20 rounded-2xl" style={{
-          background: "rgba(255,255,255,0.02)",
-          border: "1px solid rgba(255,255,255,0.05)",
+          background: "rgba(var(--tint-rgb), 0.02)",
+          border: "1px solid rgba(var(--tint-rgb), 0.05)",
         }}>
           <p className="text-4xl mb-3">📋</p>
-          <p className="font-medium" style={{ color: "#4a6080" }}>No hay picks todavía</p>
+          <p className="font-medium" style={{ color: "var(--text-faint)" }}>No hay picks todavía</p>
         </div>
       )}
     </div>
