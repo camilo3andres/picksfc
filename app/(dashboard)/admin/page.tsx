@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import type { PickWithAuthor } from "@/lib/types";
 import { createClient, getSessionUser } from "@/lib/supabase-server";
 import AdminMatchResolver from "@/components/picks/admin-match-resolver";
 import AdminPickCard from "@/components/picks/admin-pick-card";
@@ -28,7 +29,8 @@ export default async function AdminPage() {
       .order("total_picks", { ascending: false }),
   ]);
 
-  const allPicks   = picks ?? [];
+  // Supabase no conoce la forma de las filas; se declara una vez aquí
+  const allPicks   = (picks ?? []) as PickWithAuthor[];
   const allUsers   = users ?? [];
   const pending    = allPicks.filter((p) => p.status === "pending");
   const correct    = allPicks.filter((p) => p.status === "correct");
@@ -104,7 +106,7 @@ export default async function AdminPage() {
               Consulta football-data.org y resuelve automáticamente los picks con partido terminado
             </p>
           </div>
-          <AutoResolveButton pendingPicks={pending as any} />
+          <AutoResolveButton pendingPicks={pending} />
         </div>
       )}
 
@@ -121,7 +123,7 @@ export default async function AdminPage() {
               </p>
             </div>
           </div>
-          <AdminMatchResolver pendingPicks={pending as any} />
+          <AdminMatchResolver pendingPicks={pending} />
         </div>
       )}
 
@@ -135,7 +137,7 @@ export default async function AdminPage() {
             </span>
           </h2>
           {pending.map((pick) => (
-            <AdminPickCard key={pick.id} pick={pick as any} />
+            <AdminPickCard key={pick.id} pick={pick} />
           ))}
         </div>
       )}
@@ -213,7 +215,7 @@ export default async function AdminPage() {
             </span>
           </h2>
           {[...correct, ...incorrect].sort((a, b) => b.created_at.localeCompare(a.created_at)).map((pick) => (
-            <AdminPickCard key={pick.id} pick={pick as any} />
+            <AdminPickCard key={pick.id} pick={pick} />
           ))}
         </div>
       )}

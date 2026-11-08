@@ -105,7 +105,8 @@ export default function MatchSelector({ onSelect, onClear }: Props) {
 
   async function handleSelectCompetition(code: string, label: string) {
     setActiveComp(code);
-    setSelectedTeam({ id: code, name: label, league: label, logo: null } as any);
+    // Una competición se muestra como si fuera un "equipo" seleccionado (sin escudo)
+    setSelectedTeam({ id: code, name: label, league: label, logo: "" });
     setLoadingMatches(true);
     setMatches([]);
     const res  = await fetch(`/api/football/competition?code=${code}`);

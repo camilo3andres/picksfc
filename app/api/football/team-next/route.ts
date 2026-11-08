@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { SPORTSDB_URL } from "@/lib/sportsdb";
-import { normalizeLeague } from "@/lib/leagues";
+import { fromSportsDb, mapMatches } from "@/lib/api-mappers";
+import type { SportsDbEventsResponse } from "@/lib/api-types";
 
 // Próximos partidos de un equipo según TheSportsDB.
 // Se usa para equipos que football-data.org no cubre en su plan gratis
@@ -15,22 +16,9 @@ export async function GET(req: NextRequest) {
     });
     if (!res.ok) return NextResponse.json([]);
 
-    const data = await res.json();
     // Mismo formato que /api/football/matches para que el selector no note la diferencia
-    const matches = (data.events ?? [])
-      .filter((e: any) => e.strSport === "Soccer" && e.strHomeTeam && e.strAwayTeam)
-      .map((e: any) => ({
-        idEvent:          String(e.idEvent),
-        strHomeTeam:      e.strHomeTeam,
-        strAwayTeam:      e.strAwayTeam,
-        strLeague:        normalizeLeague(e.strLeague),
-        dateEvent:        e.dateEvent,
-        strTime:          e.strTime?.slice(0, 5) ?? null,
-        strHomeTeamBadge: e.strHomeTeamBadge ?? null,
-        strAwayTeamBadge: e.strAwayTeamBadge ?? null,
-      }));
-
-    return NextResponse.json(matches);
+    const data: SportsDbEventsResponse = await res.json();
+    return NextResponse.json(mapMatches(data.events, fromSportsDb));
   } catch {
     return NextResponse.json([]);
   }

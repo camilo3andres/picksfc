@@ -151,7 +151,7 @@ export default function AdminPickCard({ pick }: Props) {
 
       {pick.reasoning && (
         <p className="text-xs italic pl-3" style={{ color: "var(--text-3)", borderLeft: "2px solid rgba(var(--tint-rgb), 0.08)" }}>
-          "{pick.reasoning}"
+          {pick.reasoning}
         </p>
       )}
 

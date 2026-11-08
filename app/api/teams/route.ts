@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { SPORTSDB_URL } from "@/lib/sportsdb";
+import type { SportsDbTeamsResponse } from "@/lib/api-types";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -15,12 +16,12 @@ export async function GET(request: Request) {
       { next: { revalidate: 3600 } }
     );
 
-    const data = await res.json();
+    const data: SportsDbTeamsResponse = await res.json();
 
     const teams = (data.teams ?? [])
-      .filter((t: any) => t.strTeamBadge && (t.strSport === "Soccer" || t.strSport === "Football"))
+      .filter((t) => t.strTeamBadge && (t.strSport === "Soccer" || t.strSport === "Football"))
       .slice(0, 7)
-      .map((t: any) => ({
+      .map((t) => ({
         id: String(t.idTeam),
         name: t.strTeam,
         logo: t.strTeamBadge,

@@ -33,6 +33,9 @@ export type Pick = {
   profiles?: Profile;
 };
 
+// Pick con el username de su autor (lo que trae .select("*, profiles(username)"))
+export type PickWithAuthor = Pick & { profiles: { username: string; is_verified?: boolean } };
+
 // Partido terminado con marcador final (ver /api/football/results y /team-last)
 export type FinishedMatch = {
   home: string;

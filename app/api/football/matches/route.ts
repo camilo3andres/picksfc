@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { normalizeLeague } from "@/lib/leagues";
+import { fromFootballData, mapMatches } from "@/lib/api-mappers";
+import type { FootballDataMatchesResponse } from "@/lib/api-types";
 
+// Próximos 5 partidos de un equipo, desde football-data.org.
+// Recibe el ID de football-data del equipo (el de lib/teams.ts).
 export async function GET(req: NextRequest) {
   const id  = req.nextUrl.searchParams.get("id");
   const key = process.env.FOOTBALL_DATA_API_KEY;
@@ -12,22 +15,10 @@ export async function GET(req: NextRequest) {
       `https://api.football-data.org/v4/teams/${id}/matches?status=SCHEDULED&limit=5`,
       { headers: { "X-Auth-Token": key }, next: { revalidate: 300 } }
     );
-
     if (!res.ok) return NextResponse.json([]);
 
-    const data = await res.json();
-    const matches = (data.matches ?? []).map((m: any) => ({
-      idEvent:          String(m.id),
-      strHomeTeam:      m.homeTeam.name,
-      strAwayTeam:      m.awayTeam.name,
-      strLeague:        normalizeLeague(m.competition.name),
-      dateEvent:        m.utcDate.split("T")[0],
-      strTime:          m.utcDate.split("T")[1]?.slice(0, 5) ?? null,
-      strHomeTeamBadge: m.homeTeam.crest ?? null,
-      strAwayTeamBadge: m.awayTeam.crest ?? null,
-    }));
-
-    return NextResponse.json(matches);
+    const data: FootballDataMatchesResponse = await res.json();
+    return NextResponse.json(mapMatches(data.matches, fromFootballData));
   } catch {
     return NextResponse.json([]);
   }

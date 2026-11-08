@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { normalizeLeague } from "@/lib/leagues";
+import { fromFootballData, mapMatches } from "@/lib/api-mappers";
+import type { FootballDataMatchesResponse } from "@/lib/api-types";
 
+// Próximos partidos de una competición (PL, PD, CL...), desde football-data.org.
 export async function GET(req: NextRequest) {
   const code = req.nextUrl.searchParams.get("code");
   const key  = process.env.FOOTBALL_DATA_API_KEY;
@@ -12,24 +14,10 @@ export async function GET(req: NextRequest) {
       `https://api.football-data.org/v4/competitions/${code}/matches?status=SCHEDULED`,
       { headers: { "X-Auth-Token": key }, next: { revalidate: 300 } }
     );
-
     if (!res.ok) return NextResponse.json([]);
 
-    const data = await res.json();
-    const matches = (data.matches ?? [])
-      .filter((m: any) => m.homeTeam?.name && m.awayTeam?.name)
-      .map((m: any) => ({
-        idEvent:          String(m.id),
-        strHomeTeam:      m.homeTeam.name,
-        strAwayTeam:      m.awayTeam.name,
-        strLeague:        normalizeLeague(m.competition.name),
-        dateEvent:        m.utcDate.split("T")[0],
-        strTime:          m.utcDate.split("T")[1]?.slice(0, 5) ?? null,
-        strHomeTeamBadge: m.homeTeam.crest ?? null,
-        strAwayTeamBadge: m.awayTeam.crest ?? null,
-      }));
-
-    return NextResponse.json(matches);
+    const data: FootballDataMatchesResponse = await res.json();
+    return NextResponse.json(mapMatches(data.matches, fromFootballData));
   } catch {
     return NextResponse.json([]);
   }
