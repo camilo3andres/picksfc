@@ -2,7 +2,7 @@ import Image from "next/image";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "PicksFC · En mantenimiento",
+  title: "En mantenimiento",
   robots: { index: false },
 };
 

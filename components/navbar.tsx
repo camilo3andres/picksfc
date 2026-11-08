@@ -121,7 +121,7 @@ export default function Navbar({ username, isAdmin, isLoggedIn }: Props) {
                 </Link>
                 <Link href="/register" className="text-sm font-bold px-3 py-1.5 rounded-xl transition-all"
                   style={{ background: "linear-gradient(135deg, var(--primary), var(--primary-strong))", color: "#fff", boxShadow: "0 2px 10px rgba(var(--primary-rgb), 0.25)" }}>
-                  Registrate
+                  Regístrate
                 </Link>
               </div>
             )}
@@ -142,7 +142,7 @@ export default function Navbar({ username, isAdmin, isLoggedIn }: Props) {
                 </Link>
                 <Link href="/register" className="text-xs font-bold px-2.5 py-1.5 rounded-xl"
                   style={{ background: "linear-gradient(135deg, var(--primary), var(--primary-strong))", color: "#fff", boxShadow: "0 2px 8px rgba(var(--primary-rgb), 0.25)" }}>
-                  Registrate
+                  Regístrate
                 </Link>
               </div>
             )}
@@ -204,7 +204,7 @@ export default function Navbar({ username, isAdmin, isLoggedIn }: Props) {
             </Link>
           )}
 
-          {/* Slot 5: Salir (si está logueado) / Registrate (anónimo) */}
+          {/* Slot 5: Salir (si está logueado) / Regístrate (anónimo) */}
           {isLoggedIn ? (
             <button
               onClick={handleLogout}
@@ -221,7 +221,7 @@ export default function Navbar({ username, isAdmin, isLoggedIn }: Props) {
               style={{ color: "var(--text-dim)" }}
             >
               <PlusCircle size={21} />
-              <span className="text-[10px] font-semibold">Registrate</span>
+              <span className="text-[10px] font-semibold">Regístrate</span>
             </Link>
           )}
         </div>

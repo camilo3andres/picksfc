@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import type { PickWithAuthor } from "@/lib/types";
 import { createClient, getSessionUser } from "@/lib/supabase-server";
@@ -5,6 +6,11 @@ import AdminMatchResolver from "@/components/picks/admin-match-resolver";
 import AdminPickCard from "@/components/picks/admin-pick-card";
 import AutoResolveButton from "@/components/picks/auto-resolve-button";
 import VerifyTipsterButton from "@/components/picks/verify-tipster-button";
+
+export const metadata: Metadata = {
+  title: "Admin",
+  robots: { index: false, follow: false },
+};
 
 export default async function AdminPage() {
   const supabase = await createClient();
@@ -119,7 +125,7 @@ export default async function AdminPage() {
                 ⚡ Resolver manualmente
               </h2>
               <p className="text-xs mt-0.5" style={{ color: "var(--text-faint)" }}>
-                Ingresá el marcador y todos los picks del partido se actualizan
+                Ingresa el marcador y todos los picks del partido se actualizan
               </p>
             </div>
           </div>

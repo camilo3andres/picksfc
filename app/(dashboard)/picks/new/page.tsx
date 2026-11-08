@@ -23,9 +23,9 @@ const PREDICTIONS_ROW2 = [
 const PREDICTIONS = [...PREDICTIONS_ROW1, ...PREDICTIONS_ROW2];
 
 const pickSchema = z.object({
-  league:     z.string().min(1, "Seleccioná un partido"),
+  league:     z.string().min(1, "Selecciona un partido"),
   prediction: z.enum(["home", "draw", "away", "home_draw", "away_draw"]),
-  match_date: z.string().min(1, "Seleccioná un partido"),
+  match_date: z.string().min(1, "Selecciona un partido"),
   reasoning:  z.string().max(500, "Máximo 500 caracteres").optional(),
 });
 
@@ -74,7 +74,7 @@ export default function NewPickPage() {
   }
 
   async function onSubmit(data: PickForm) {
-    if (!homeTeam.name) { setError("Seleccioná un partido primero"); return; }
+    if (!homeTeam.name) { setError("Selecciona un partido primero"); return; }
 
     // Bloquear si el partido ya comenzó
     if (matchTime) {
@@ -113,7 +113,7 @@ export default function NewPickPage() {
     });
 
     if (err) {
-      setError("Error al publicar el pick. Intentá de nuevo.");
+      setError("Error al publicar el pick. Intenta de nuevo.");
       setLoading(false);
       return;
     }
@@ -133,7 +133,7 @@ export default function NewPickPage() {
           <Image src="/icon.png" alt="" width={28} height={28} className="inline-block" />
           <span><span style={{ color: "var(--primary-light)" }}>Nuevo</span> pick</span>
         </h1>
-        <p className="text-sm mt-0.5" style={{ color: "var(--text-faint)" }}>Publicá tu pronóstico y compite con la comunidad</p>
+        <p className="text-sm mt-0.5" style={{ color: "var(--text-faint)" }}>Publica tu pronóstico y compite con la comunidad</p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -197,7 +197,7 @@ export default function NewPickPage() {
         {/* Match Selector */}
         <MatchSelector onSelect={handleMatchSelect} onClear={handleMatchClear} />
         {(errors.league || errors.match_date) && !homeTeam.name && (
-          <p className="text-red-400 text-xs -mt-2">Seleccioná un partido primero</p>
+          <p className="text-red-400 text-xs -mt-2">Selecciona un partido primero</p>
         )}
 
         {/* Predicción */}

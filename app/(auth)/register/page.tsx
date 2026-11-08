@@ -55,14 +55,14 @@ export default function RegisterPage() {
     if (error) {
       setError(error.message === "User already registered"
         ? "Ya existe una cuenta con ese email"
-        : "Error al crear la cuenta. Intentá de nuevo.");
+        : "Error al crear la cuenta. Intenta de nuevo.");
       setLoading(false);
       return;
     }
     // Con "Confirm email" activo, Supabase NO da error si el email ya existe:
     // finge éxito (y no manda correo) pero devuelve el usuario sin identidades.
     if (signUpData.user?.identities?.length === 0) {
-      setError("Ya existe una cuenta con ese email. Iniciá sesión o recuperá tu contraseña.");
+      setError("Ya existe una cuenta con ese correo. Inicia sesión o recupera tu contraseña.");
       setLoading(false);
       return;
     }
@@ -93,9 +93,9 @@ export default function RegisterPage() {
           style={{ background: "rgba(var(--primary-rgb), 0.12)", border: "1px solid rgba(var(--primary-rgb), 0.25)" }}>
           📧
         </div>
-        <h2 className="text-xl font-black mb-2" style={{ color: "var(--text)" }}>Revisá tu correo</h2>
+        <h2 className="text-xl font-black mb-2" style={{ color: "var(--text)" }}>Revisa tu correo</h2>
         <p className="text-sm mb-5" style={{ color: "var(--text-muted)" }}>
-          Te enviamos un link de confirmación. Hacé clic en el link para activar tu cuenta y después iniciá sesión.
+          Te enviamos un enlace de confirmación. Haz clic en él para activar tu cuenta y luego inicia sesión.
         </p>
         <Link href="/login"
           className="inline-block text-sm font-bold px-5 py-2.5 rounded-xl transition-all"
@@ -113,7 +113,7 @@ export default function RegisterPage() {
       boxShadow: "0 4px 18px rgba(0,0,0,0.28)",
     }}>
       <h2 className="text-xl font-black mb-1" style={{ color: "var(--text)" }}>Crear cuenta</h2>
-      <p className="text-sm mb-6" style={{ color: "var(--text-muted)" }}>Unite a la comunidad de pronosticadores</p>
+      <p className="text-sm mb-6" style={{ color: "var(--text-muted)" }}>Únete a la comunidad de pronosticadores</p>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="space-y-1.5">
@@ -147,7 +147,7 @@ export default function RegisterPage() {
           <div className="relative">
             <input
               type={showPassword ? "text" : "password"}
-              placeholder="Creá tu contraseña para PicksFC"
+              placeholder="Crea tu contraseña para PicksFC"
               style={{ ...inputStyle, paddingRight: "40px" }}
               {...register("password")}
               onFocus={(e) => { e.target.style.border = "1px solid rgba(var(--primary-rgb), 0.45)"; e.target.style.boxShadow = "0 0 0 3px rgba(var(--primary-rgb), 0.07)"; }}
@@ -196,9 +196,9 @@ export default function RegisterPage() {
       </form>
 
       <p className="text-center text-sm mt-5" style={{ color: "var(--text-muted)" }}>
-        ¿Ya tenés cuenta?{" "}
+        ¿Ya tienes cuenta?{" "}
         <Link href="/login" className="font-bold transition-colors" style={{ color: "var(--primary-light)" }}>
-          Iniciá sesión
+          Inicia sesión
         </Link>
       </p>
     </div>

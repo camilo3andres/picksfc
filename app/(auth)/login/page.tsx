@@ -62,7 +62,7 @@ export default function LoginPage() {
       boxShadow: "0 4px 18px rgba(0,0,0,0.28)",
     }}>
       <h2 className="text-xl font-black mb-1" style={{ color: "var(--text)" }}>Iniciar sesión</h2>
-      <p className="text-sm mb-6" style={{ color: "var(--text-muted)" }}>Ingresá a tu cuenta para ver los picks</p>
+      <p className="text-sm mb-6" style={{ color: "var(--text-muted)" }}>Ingresa a tu cuenta para ver los picks</p>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="space-y-1.5">
@@ -116,9 +116,9 @@ export default function LoginPage() {
 
       <div className="mt-5 space-y-2 text-center">
         <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-          ¿No tenés cuenta?{" "}
+          ¿No tienes cuenta?{" "}
           <Link href="/register" className="font-bold transition-colors" style={{ color: "var(--primary-light)" }}>
-            Registrate
+            Regístrate
           </Link>
         </p>
         <p className="text-sm">

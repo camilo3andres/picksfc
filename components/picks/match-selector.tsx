@@ -277,7 +277,7 @@ export default function MatchSelector({ onSelect, onClear }: Props) {
         </div>
       </div>
 
-      <label className="text-sm font-semibold" style={{ color: "var(--text-2)" }}>O buscá un equipo</label>
+      <label className="text-sm font-semibold" style={{ color: "var(--text-2)" }}>O busca un equipo</label>
       <div className="relative">
         <input
           type="text"

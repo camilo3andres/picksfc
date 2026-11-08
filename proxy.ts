@@ -73,6 +73,6 @@ export async function proxy(request: NextRequest) {
 // Así esas peticiones responden más rápido.
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|icon.png|api/football|api/picks|.*\\.(?:png|jpg|jpeg|svg|webp|ico)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|icon.png|robots.txt|sitemap.xml|api/football|api/picks|.*\\.(?:png|jpg|jpeg|svg|webp|ico)$).*)",
   ],
 };

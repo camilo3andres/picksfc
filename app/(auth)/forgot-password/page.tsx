@@ -54,7 +54,7 @@ export default function ForgotPasswordPage() {
           style={{ background: "rgba(var(--primary-rgb), 0.12)", border: "1px solid rgba(var(--primary-rgb), 0.25)" }}>
           📧
         </div>
-        <h2 className="text-xl font-black mb-2" style={{ color: "var(--text)" }}>Revisá tu correo</h2>
+        <h2 className="text-xl font-black mb-2" style={{ color: "var(--text)" }}>Revisa tu correo</h2>
         <p className="text-sm mb-5" style={{ color: "var(--text-muted)" }}>
           Si ese email está registrado, te enviamos un link para restablecer tu contraseña.
         </p>

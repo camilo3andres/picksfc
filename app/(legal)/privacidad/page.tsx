@@ -3,7 +3,7 @@ import Link from "next/link";
 import { LEGAL } from "@/lib/legal";
 
 export const metadata: Metadata = {
-  title: `Política de privacidad · ${LEGAL.siteName}`,
+  title: "Política de privacidad", // la plantilla del layout agrega "· PicksFC"
   description: `Cómo ${LEGAL.siteName} recoge, usa y protege tus datos personales.`,
 };
 

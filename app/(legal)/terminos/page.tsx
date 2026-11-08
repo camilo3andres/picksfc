@@ -3,7 +3,7 @@ import Link from "next/link";
 import { LEGAL } from "@/lib/legal";
 
 export const metadata: Metadata = {
-  title: `Términos y condiciones · ${LEGAL.siteName}`,
+  title: "Términos y condiciones", // la plantilla del layout agrega "· PicksFC"
   description: `Reglas de uso de ${LEGAL.siteName}, la comunidad de pronósticos de fútbol.`,
 };
 

@@ -26,7 +26,7 @@ export default async function HomePage() {
             </Link>
             <Link href="/register" className="text-xs sm:text-sm font-bold px-2.5 sm:px-3 py-1.5 rounded-xl whitespace-nowrap"
               style={{ background: "linear-gradient(135deg, var(--primary), var(--primary-strong))", color: "#fff", boxShadow: "0 2px 10px rgba(var(--primary-rgb), 0.25)" }}>
-              Registrate gratis
+              Regístrate gratis
             </Link>
           </div>
         </div>
@@ -37,11 +37,11 @@ export default async function HomePage() {
         <Image src="/icon.png" alt="PicksFC" width={96} height={96} className="rounded-3xl mb-6" style={{ boxShadow: "0 8px 40px rgba(var(--primary-rgb), 0.25)" }} />
 
         <h1 className="text-2xl sm:text-5xl font-black mb-4 leading-tight" style={{ color: "var(--text)" }}>
-          Pronosticá, compite y <span style={{ color: "var(--primary-light)" }}>demuestra que sabés</span>
+          Pronostica, compite y <span style={{ color: "var(--primary-light)" }}>demuestra que sabes</span>
         </h1>
 
         <p className="text-lg mb-8 max-w-md" style={{ color: "var(--text-3)" }}>
-          La comunidad de pronósticos de fútbol. Publicá tus picks, seguí a los mejores y subí al ranking.
+          La comunidad de pronósticos de fútbol. Publica tus picks, sigue a los mejores y sube en el ranking.
         </p>
 
         {/* Stats */}
@@ -61,7 +61,7 @@ export default async function HomePage() {
         <div className="flex flex-col sm:flex-row gap-3">
           <Link href="/register" className="px-8 py-3.5 rounded-2xl text-base font-black transition-all"
             style={{ background: "linear-gradient(135deg, var(--primary), var(--primary-strong))", color: "#fff", boxShadow: "0 6px 24px rgba(var(--primary-rgb), 0.35)" }}>
-            ⚡ Registrate gratis
+            ⚡ Regístrate gratis
           </Link>
           <Link href="/feed" className="px-8 py-3.5 rounded-2xl text-base font-semibold transition-all"
             style={{ background: "rgba(var(--tint-rgb), 0.05)", color: "var(--text-2)", border: "1px solid rgba(var(--tint-rgb), 0.10)" }}>

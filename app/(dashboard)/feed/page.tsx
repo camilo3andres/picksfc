@@ -1,6 +1,12 @@
+import type { Metadata } from "next";
 import { createClient, getSessionUser } from "@/lib/supabase-server";
 import { fetchFeedPage } from "@/lib/feed";
 import FeedList from "@/components/picks/feed-list";
+
+export const metadata: Metadata = {
+  title: "Feed de pronósticos",
+  description: "Los últimos pronósticos de fútbol de la comunidad PicksFC: picks, análisis y resultados.",
+};
 
 export default async function FeedPage() {
   const supabase = await createClient();

@@ -1,5 +1,13 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import SiteFooter from "@/components/site-footer";
+
+// Login, registro y recuperar contraseña no le sirven a quien busca en Google:
+// "noindex" le pide al buscador que no las muestre en los resultados.
+// (Las páginas son "use client" y no pueden exportar metadata, por eso va en el layout.)
+export const metadata: Metadata = {
+  robots: { index: false, follow: true },
+};
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (

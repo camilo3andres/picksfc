@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase-server";
 import Avatar from "@/components/ui/avatar";
@@ -54,6 +55,11 @@ async function getRanking() {
     unranked: all.filter((r) => r.resolved < MIN_RESOLVED).sort((a, b) => b.resolved - a.resolved),
   };
 }
+
+export const metadata: Metadata = {
+  title: "Ranking de tipsters",
+  description: "Los pronosticadores con mejor porcentaje de acierto en PicksFC, con historial verificado.",
+};
 
 export default async function LeaderboardPage() {
   const { ranked, unranked } = await getRanking();

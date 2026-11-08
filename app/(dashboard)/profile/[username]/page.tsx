@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient, getSessionUser } from "@/lib/supabase-server";
@@ -12,6 +13,15 @@ type Props = {
   params: Promise<{ username: string }>;
 };
 
+// Título por perfil ("@Andres · PicksFC"). Solo usa la URL, sin consultar la base,
+// para no agregar una consulta extra a cada visita.
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const username = decodeURIComponent((await params).username);
+  return {
+    title: `@${username}`,
+    description: `Pronósticos de fútbol de @${username} en PicksFC: historial, aciertos y racha.`,
+  };
+}
 
 export default async function ProfilePage({ params }: Props) {
   const { username } = await params;

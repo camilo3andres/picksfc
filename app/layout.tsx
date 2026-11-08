@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Outfit } from "next/font/google";
+import { SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 // Outfit es una fuente "variable": UN solo archivo trae todos los grosores
@@ -11,8 +12,21 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "PicksFC · Pronósticos",
-  description: "La comunidad de pronosticadores de fútbol",
+  // Base para que los enlaces de imágenes y canonical salgan con el dominio completo
+  metadataBase: new URL(SITE_URL),
+  title: {
+    // "default" se usa en las páginas sin título propio (ej. el inicio).
+    // "template" arma el de las demás: "Ranking" → "Ranking · PicksFC".
+    default: "PicksFC · Pronósticos de fútbol",
+    template: "%s · PicksFC",
+  },
+  description:
+    "Publica tus pronósticos de fútbol, compite con la comunidad y demuestra que sabes. Historial verificado y ranking de los mejores tipsters.",
+  openGraph: {
+    siteName: "PicksFC",
+    locale: "es_CO",
+    type: "website",
+  },
 };
 
 export default function RootLayout({

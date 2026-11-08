@@ -62,7 +62,7 @@ export default function ResetPasswordPage() {
       boxShadow: "0 4px 18px rgba(0,0,0,0.28)",
     }}>
       <h2 className="text-xl font-black mb-1" style={{ color: "var(--text)" }}>Nueva contraseña</h2>
-      <p className="text-sm mb-6" style={{ color: "var(--text-muted)" }}>Elegí una nueva contraseña para tu cuenta</p>
+      <p className="text-sm mb-6" style={{ color: "var(--text-muted)" }}>Elige una nueva contraseña para tu cuenta</p>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="space-y-1.5">
@@ -90,7 +90,7 @@ export default function ResetPasswordPage() {
           <div className="relative">
             <input
               type={showConfirm ? "text" : "password"}
-              placeholder="Repetí la contraseña"
+              placeholder="Repite la contraseña"
               style={{ ...inputStyle, paddingRight: "40px" }}
               {...register("confirm")}
               onFocus={(e) => { e.target.style.border = "1px solid rgba(var(--primary-rgb), 0.45)"; e.target.style.boxShadow = "0 0 0 3px rgba(var(--primary-rgb), 0.07)"; }}
