@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase";
 import { getAvatarColor } from "@/lib/utils";
 import { Comment } from "@/lib/types";
 import { SendIcon } from "@/components/ui/icons";
+import { useViewer } from "@/components/viewer-context";
 
 type Props = {
   pickId: string;
@@ -30,6 +31,7 @@ function timeAgo(dateStr: string): string {
 }
 
 export default function CommentsSection({ pickId, currentUserId, onCountChange }: Props) {
+  const { isAdmin } = useViewer(); // los admins pueden borrar cualquier comentario (moderación)
   const [comments, setComments] = useState<Comment[]>([]);
   const [showAll, setShowAll] = useState(false);
   const [text, setText] = useState("");
@@ -112,10 +114,18 @@ export default function CommentsSection({ pickId, currentUserId, onCountChange }
     }
   }
 
-  async function handleDelete(commentId: string) {
-    if (!confirm("¿Eliminar este comentario?")) return;
-    const { error } = await supabase.from("comments").delete().eq("id", commentId);
-    if (error) {
+  async function handleDelete(comment: Comment) {
+    const moderating = comment.user_id !== currentUserId; // un admin borrando el comentario de otro
+    const question = moderating
+      ? `Moderación: ¿eliminar el comentario de @${comment.profiles.username}?`
+      : "¿Eliminar este comentario?";
+    if (!confirm(question)) return;
+
+    const commentId = comment.id;
+    // .select() devuelve las filas borradas: si la regla de seguridad no lo permite,
+    // Supabase no da error pero no borra nada (0 filas). Así se detecta ese caso.
+    const { data, error } = await supabase.from("comments").delete().eq("id", commentId).select("id");
+    if (error || !data?.length) {
       setError("No se pudo eliminar el comentario.");
       return;
     }
@@ -147,8 +157,8 @@ export default function CommentsSection({ pickId, currentUserId, onCountChange }
                 <CommentItem
                   key={c.id}
                   comment={c}
-                  isOwn={c.user_id === currentUserId}
-                  onDelete={() => handleDelete(c.id)}
+                  canDelete={c.user_id === currentUserId || isAdmin}
+                  onDelete={() => handleDelete(c)}
                 />
               ))}
             </ul>
@@ -200,7 +210,7 @@ export default function CommentsSection({ pickId, currentUserId, onCountChange }
 
 // ─── Subcomponentes ────────────────────────────────────────────
 
-function CommentItem({ comment, isOwn, onDelete }: { comment: Comment; isOwn: boolean; onDelete: () => void }) {
+function CommentItem({ comment, canDelete, onDelete }: { comment: Comment; canDelete: boolean; onDelete: () => void }) {
   const username = comment.profiles.username;
 
   return (
@@ -233,7 +243,7 @@ function CommentItem({ comment, isOwn, onDelete }: { comment: Comment; isOwn: bo
           >
             {timeAgo(comment.created_at)}
           </time>
-          {isOwn && (
+          {canDelete && (
             <button onClick={onDelete} className="font-semibold hover:underline hover:text-red-400" style={{ color: "var(--text-muted)" }}>
               Eliminar
             </button>
