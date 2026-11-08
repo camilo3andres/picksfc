@@ -33,6 +33,15 @@ export type Pick = {
   profiles?: Profile;
 };
 
+// Partido terminado con marcador final (ver /api/football/results y /team-last)
+export type FinishedMatch = {
+  home: string;
+  away: string;
+  date: string; // YYYY-MM-DD
+  homeScore: number;
+  awayScore: number;
+};
+
 export type Like = {
   id: string;
   pick_id: string;

@@ -1,0 +1,23 @@
+# Auto-resolver de picks: cada hora le pide a picksfc.com que marque ✅/❌
+# los picks cuyos partidos ya terminaron.
+#
+# El plan gratis de Vercel solo permite crons una vez al día; GitHub Actions
+# es gratis y permite cada hora. La clave CRON_SECRET se guarda en
+# GitHub → Settings → Secrets and variables → Actions (nunca en este archivo).
+name: Auto-resolver picks
+
+on:
+  schedule:
+    - cron: "15 * * * *"   # minuto 15 de cada hora (UTC)
+  workflow_dispatch:        # botón "Run workflow" para probarlo a mano
+
+jobs:
+  resolve:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Llamar al auto-resolver
+        run: |
+          curl --fail-with-body -sS \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            https://www.picksfc.com/api/cron/resolve-picks
