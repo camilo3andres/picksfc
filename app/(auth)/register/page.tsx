@@ -37,7 +37,7 @@ export default function RegisterPage() {
     setLoading(true);
     setError(null);
     const supabase = createClient();
-    const { error } = await supabase.auth.signUp({
+    const { data: signUpData, error } = await supabase.auth.signUp({
       email: data.email,
       password: data.password,
       options: {
@@ -56,6 +56,13 @@ export default function RegisterPage() {
       setError(error.message === "User already registered"
         ? "Ya existe una cuenta con ese email"
         : "Error al crear la cuenta. Intentá de nuevo.");
+      setLoading(false);
+      return;
+    }
+    // Con "Confirm email" activo, Supabase NO da error si el email ya existe:
+    // finge éxito (y no manda correo) pero devuelve el usuario sin identidades.
+    if (signUpData.user?.identities?.length === 0) {
+      setError("Ya existe una cuenta con ese email. Iniciá sesión o recuperá tu contraseña.");
       setLoading(false);
       return;
     }
