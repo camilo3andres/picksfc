@@ -8,6 +8,14 @@ export type Team = {
 
 const BASE = "https://crests.football-data.org";
 
+// ¿De qué API salen los partidos de este equipo?
+// - Ligas europeas: el `id` de la lista ES el ID de football-data.org.
+// - Liga Dimayor: football-data no la cubre gratis → TheSportsDB. Ahí el `id`
+//   es de TheSportsDB (números 1376xx) o un comodín "col-*" que obliga a buscar por nombre.
+export function usesFootballData(team: Team): boolean {
+  return team.league !== "Liga Dimayor";
+}
+
 export const TEAMS: Team[] = [
   // ========== PREMIER LEAGUE ==========
   { id: "57",   name: "Arsenal",             logo: `${BASE}/57.png`,   league: "Premier League" },
@@ -116,6 +124,8 @@ export const TEAMS: Team[] = [
   { id: "519",  name: "Auxerre",             logo: `${BASE}/519.png`,  league: "Ligue 1" },
 
   // ========== LIGA DIMAYOR (COLOMBIA) ==========
+  // IDs de TheSportsDB, verificados uno por uno con lookupteam.php el 2026-11-07.
+  // sportsdbName = nombre que usa TheSportsDB cuando es distinto al nuestro.
   { id: "137607", name: "Atlético Nacional",     logo: "https://r2.thesportsdb.com/images/media/team/badge/efl4o41576157720.png", league: "Liga Dimayor" },
   { id: "137617", name: "Millonarios FC",         logo: "https://r2.thesportsdb.com/images/media/team/badge/mc73ix1629122587.png", league: "Liga Dimayor" },
   { id: "137615", name: "Junior FC",              logo: "https://r2.thesportsdb.com/images/media/team/badge/zzarls1576161686.png", league: "Liga Dimayor" },
@@ -123,19 +133,19 @@ export const TEAMS: Team[] = [
   { id: "137606", name: "Atlético Bucaramanga",   logo: "https://r2.thesportsdb.com/images/media/team/badge/rtjs411576157184.png", league: "Liga Dimayor" },
   { id: "137623", name: "Deportivo Pereira",      logo: "https://r2.thesportsdb.com/images/media/team/badge/elw7as1629122545.png", league: "Liga Dimayor" },
   { id: "137621", name: "Independiente Santa Fe", logo: "https://r2.thesportsdb.com/images/media/team/badge/16vs771629122765.png", league: "Liga Dimayor" },
-  { id: "137608", name: "América de Cali",        logo: "https://r2.thesportsdb.com/images/media/team/badge/lwxcn71576156105.png", league: "Liga Dimayor" },
+  { id: "137604", name: "América de Cali",        logo: "https://r2.thesportsdb.com/images/media/team/badge/lwxcn71576156105.png", league: "Liga Dimayor" },
   { id: "137613", name: "Independiente Medellín", logo: "https://r2.thesportsdb.com/images/media/team/badge/f50g3b1678411414.png", league: "Liga Dimayor" },
   { id: "137618", name: "Once Caldas",            logo: "https://www.thesportsdb.com/images/media/team/badge/nuh9kd1778085916.png", league: "Liga Dimayor" },
   { id: "137622", name: "Boyacá Chicó",           logo: "https://r2.thesportsdb.com/images/media/team/badge/boe8tv1677602771.png", league: "Liga Dimayor" },
-  { id: "137605", name: "Alianza FC",             logo: "https://r2.thesportsdb.com/images/media/team/badge/efldut1715066310.png", league: "Liga Dimayor" },
+  { id: "137605", name: "Alianza FC", sportsdbName: "Alianza de Valledupar",             logo: "https://r2.thesportsdb.com/images/media/team/badge/efldut1715066310.png", league: "Liga Dimayor" },
   { id: "137610", name: "Deportivo Cali",         logo: "https://r2.thesportsdb.com/images/media/team/badge/isc2yu1580833286.png", league: "Liga Dimayor" },
   { id: "137611", name: "Deportivo Pasto",        logo: "https://r2.thesportsdb.com/images/media/team/badge/zlmyh31576159327.png", league: "Liga Dimayor" },
   { id: "137614", name: "Jaguares de Córdoba",    logo: "https://r2.thesportsdb.com/images/media/team/badge/7ypl1y1629122579.png", league: "Liga Dimayor" },
-  { id: "col-int", name: "Internacional de Bogotá", logo: "https://r2.thesportsdb.com/images/media/team/badge/jujchi1767716318.png", league: "Liga Dimayor" },
-  { id: "col-agu", name: "Águilas Doradas",         logo: "https://r2.thesportsdb.com/images/media/team/badge/6d7qas1703002070.png", league: "Liga Dimayor" },
-  { id: "col-for", name: "Fortaleza FC",            logo: "https://r2.thesportsdb.com/images/media/team/badge/w1c6ix1769101721.png", league: "Liga Dimayor" },
-  { id: "col-cuc", name: "Cúcuta Deportivo",        logo: "https://www.thesportsdb.com/images/media/team/badge/petg3h1778087075.png/medium", league: "Liga Dimayor" },
-  { id: "137616", name: "Llaneros FC",            logo: "https://r2.thesportsdb.com/images/media/team/badge/q1w56m1615832197.png", league: "Liga Dimayor" },
+  { id: "137616", name: "Internacional de Bogotá", logo: "https://r2.thesportsdb.com/images/media/team/badge/jujchi1767716318.png", league: "Liga Dimayor" },
+  { id: "137620", name: "Águilas Doradas", sportsdbName: "Rionegro Águilas",         logo: "https://r2.thesportsdb.com/images/media/team/badge/6d7qas1703002070.png", league: "Liga Dimayor" },
+  { id: "141065", name: "Fortaleza FC",            logo: "https://r2.thesportsdb.com/images/media/team/badge/w1c6ix1769101721.png", league: "Liga Dimayor" },
+  { id: "137608", name: "Cúcuta Deportivo",        logo: "https://www.thesportsdb.com/images/media/team/badge/petg3h1778087075.png/medium", league: "Liga Dimayor" },
+  { id: "141067", name: "Llaneros FC",            logo: "https://r2.thesportsdb.com/images/media/team/badge/q1w56m1615832197.png", league: "Liga Dimayor" },
 ];
 
 function normalize(str: string) {

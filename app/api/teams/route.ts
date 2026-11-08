@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { SPORTSDB_URL } from "@/lib/sportsdb";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -10,7 +11,7 @@ export async function GET(request: Request) {
 
   try {
     const res = await fetch(
-      `https://www.thesportsdb.com/api/v1/json/3/searchteams.php?t=${encodeURIComponent(query)}`,
+      `${SPORTSDB_URL}/searchteams.php?t=${encodeURIComponent(query)}`,
       { next: { revalidate: 3600 } }
     );
 

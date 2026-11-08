@@ -28,9 +28,21 @@ export async function searchTeamsFromAPI(name: string): Promise<ApiTeam[]> {
   }
 }
 
+// Próximos partidos desde football-data.org — teamId = ID de football-data
 export async function getNextMatches(teamId: string): Promise<ApiMatch[]> {
   try {
     const res = await fetch(`/api/football/matches?id=${teamId}`);
+    if (!res.ok) return [];
+    return await res.json();
+  } catch {
+    return [];
+  }
+}
+
+// Próximos partidos desde TheSportsDB — teamId = ID de TheSportsDB
+export async function getNextMatchesSportsDB(teamId: string): Promise<ApiMatch[]> {
+  try {
+    const res = await fetch(`/api/football/team-next?id=${teamId}`);
     if (!res.ok) return [];
     return await res.json();
   } catch {

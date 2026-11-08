@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { normalizeLeague } from "@/lib/leagues";
 
 export async function GET(req: NextRequest) {
   const code = req.nextUrl.searchParams.get("code");
@@ -21,7 +22,7 @@ export async function GET(req: NextRequest) {
         idEvent:          String(m.id),
         strHomeTeam:      m.homeTeam.name,
         strAwayTeam:      m.awayTeam.name,
-        strLeague:        m.competition.name,
+        strLeague:        normalizeLeague(m.competition.name),
         dateEvent:        m.utcDate.split("T")[0],
         strTime:          m.utcDate.split("T")[1]?.slice(0, 5) ?? null,
         strHomeTeamBadge: m.homeTeam.crest ?? null,

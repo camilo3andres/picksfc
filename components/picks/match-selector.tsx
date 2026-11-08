@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { searchTeams, type Team } from "@/lib/teams";
-import { searchTeamsFromAPI, getNextMatches, type ApiMatch } from "@/lib/football-api";
+import { searchTeams, usesFootballData, type Team } from "@/lib/teams";
+import { searchTeamsFromAPI, getNextMatches, getNextMatchesSportsDB, type ApiMatch } from "@/lib/football-api";
 import { getUSLocalDate } from "@/lib/utils";
 
 export type SelectedMatch = {
@@ -42,6 +42,24 @@ function TeamBadge({ url, name, size = 24 }: { url: string | null; name: string;
   return <span className="flex-shrink-0 text-base">⚽</span>;
 }
 
+// Cada API numera los equipos distinto, así que nunca se mezclan IDs:
+// el ID de football-data solo va a football-data y el de TheSportsDB solo a TheSportsDB.
+async function fetchNextMatches(team: Team): Promise<ApiMatch[]> {
+  // Ligas europeas: el ID de la lista ya es de football-data
+  if (usesFootballData(team)) return getNextMatches(team.id);
+
+  // Liga Dimayor con ID numérico: ya es el ID de TheSportsDB
+  if (/^\d+$/.test(team.id)) return getNextMatchesSportsDB(team.id);
+
+  // Liga Dimayor sin ID conocido ("col-*"): buscarlo por nombre en TheSportsDB
+  const nameLower = (team.sportsdbName ?? team.name).toLowerCase();
+  const results = await searchTeamsFromAPI(team.sportsdbName ?? team.name);
+  const found =
+    results.find((t) => t.strTeam.toLowerCase() === nameLower) ??
+    results.find((t) => t.strTeam.toLowerCase().includes(nameLower) || nameLower.includes(t.strTeam.toLowerCase()));
+  return found ? getNextMatchesSportsDB(found.idTeam) : [];
+}
+
 const COMPETITIONS = [
   { code: "WC",  label: "🌍 Mundial 2026" },
   { code: "CL",  label: "⭐ Champions League" },
@@ -68,33 +86,7 @@ export default function MatchSelector({ onSelect, onClear }: Props) {
     setQuery("");
     setFocused(false);
     setLoadingMatches(true);
-    const nameLower = team.name.toLowerCase();
-    const nameWords = nameLower.split(/\s+/).filter(w => w.length > 3);
-    const firstWord = team.name.split(" ")[0];
-
-    const findMatch = (teams: Awaited<ReturnType<typeof searchTeamsFromAPI>>) =>
-      teams.find(t => t.strTeam.toLowerCase() === nameLower) ??
-      teams.find(t => t.strTeam.toLowerCase().includes(nameLower)) ??
-      teams.find(t => nameLower.includes(t.strTeam.toLowerCase())) ??
-      teams.find(t => nameWords.some(w => t.strTeam.toLowerCase().includes(w)));
-
-    // intento 1: nombre en TheSportsDB (o nombre completo)
-    const primaryName = team.sportsdbName ?? team.name;
-    const results1 = await searchTeamsFromAPI(primaryName);
-    console.log("[MatchSelector] búsqueda:", primaryName, "→", results1.map(t => `${t.strTeam} (id:${t.idTeam})`));
-    let apiTeam = findMatch(results1);
-    console.log("[MatchSelector] match encontrado:", apiTeam?.strTeam, apiTeam?.idTeam);
-
-    // intento 2: primera palabra sola como fallback
-    if (!apiTeam && firstWord !== primaryName) {
-      const results2 = await searchTeamsFromAPI(firstWord);
-      console.log("[MatchSelector] fallback búsqueda:", firstWord, "→", results2.map(t => `${t.strTeam} (id:${t.idTeam})`));
-      apiTeam = findMatch(results2);
-    }
-
-    if (!apiTeam) { setMatches([]); setLoadingMatches(false); return; }
-    const next = await getNextMatches(apiTeam.idTeam);
-    setMatches(next);
+    setMatches(await fetchNextMatches(team));
     setLoadingMatches(false);
   }
 
@@ -132,17 +124,17 @@ export default function MatchSelector({ onSelect, onClear }: Props) {
   }
 
   const inputStyle = {
-    background:   "rgba(255,255,255,0.05)",
-    border:       focused ? "1px solid rgba(34,197,94,0.50)" : "1px solid rgba(255,255,255,0.09)",
+    background:   "rgba(var(--tint-rgb), 0.05)",
+    border:       focused ? "1px solid rgba(var(--primary-rgb), 0.50)" : "1px solid rgba(var(--tint-rgb), 0.09)",
     borderRadius: "12px",
     padding:      "10px 14px",
-    color:        "#f0f6ff",
-    boxShadow:    focused ? "0 0 0 3px rgba(34,197,94,0.08)" : "none",
+    color:        "var(--text)",
+    boxShadow:    focused ? "0 0 0 3px rgba(var(--primary-rgb), 0.08)" : "none",
   };
 
   const dropdownStyle = {
-    background:   "linear-gradient(160deg, #1c2d45 0%, #162035 100%)",
-    border:       "1px solid rgba(255,255,255,0.10)",
+    background:   "linear-gradient(160deg, var(--card-top) 0%, var(--card-bottom) 100%)",
+    border:       "1px solid rgba(var(--tint-rgb), 0.10)",
     boxShadow:    "0 16px 48px rgba(0,0,0,0.55)",
     borderRadius: "12px",
   };
@@ -151,12 +143,12 @@ export default function MatchSelector({ onSelect, onClear }: Props) {
   if (selectedMatch) {
     return (
       <div className="space-y-1.5">
-        <label className="text-sm font-semibold" style={{ color: "#8fa8cc" }}>Partido</label>
+        <label className="text-sm font-semibold" style={{ color: "var(--text-2)" }}>Partido</label>
         <div
           className="flex items-center gap-3 px-3 py-2.5 rounded-xl"
           style={{
-            background: "linear-gradient(135deg, rgba(34,197,94,0.10), rgba(22,163,74,0.06))",
-            border:     "1px solid rgba(34,197,94,0.30)",
+            background: "linear-gradient(135deg, rgba(var(--primary-rgb), 0.10), rgba(var(--primary-strong-rgb), 0.06))",
+            border:     "1px solid rgba(var(--primary-rgb), 0.30)",
           }}
         >
           <TeamBadge url={selectedMatch.strHomeTeamBadge} name={selectedMatch.strHomeTeam} />
@@ -164,7 +156,7 @@ export default function MatchSelector({ onSelect, onClear }: Props) {
             <p className="text-white text-sm font-bold truncate">
               {selectedMatch.strHomeTeam} vs {selectedMatch.strAwayTeam}
             </p>
-            <p className="text-xs" style={{ color: "#4ade80" }}>
+            <p className="text-xs" style={{ color: "var(--primary-light)" }}>
               {selectedMatch.strLeague} · {formatDate(getUSLocalDate(selectedMatch.dateEvent, selectedMatch.strTime))}
             </p>
           </div>
@@ -173,7 +165,7 @@ export default function MatchSelector({ onSelect, onClear }: Props) {
             type="button"
             onClick={handleClear}
             className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ml-1"
-            style={{ color: "#6b87ab", background: "rgba(255,255,255,0.06)" }}
+            style={{ color: "var(--text-3)", background: "rgba(var(--tint-rgb), 0.06)" }}
           >
             ✕
           </button>
@@ -187,15 +179,15 @@ export default function MatchSelector({ onSelect, onClear }: Props) {
     return (
       <div className="space-y-1.5">
         <div className="flex items-center gap-2">
-          <label className="text-sm font-semibold" style={{ color: "#8fa8cc" }}>
+          <label className="text-sm font-semibold" style={{ color: "var(--text-2)" }}>
             Próximos partidos
           </label>
-          <span className="text-sm font-black" style={{ color: "#f0f6ff" }}>{selectedTeam.name}</span>
+          <span className="text-sm font-black" style={{ color: "var(--text)" }}>{selectedTeam.name}</span>
           <button
             type="button"
             onClick={handleClear}
             className="text-xs ml-auto"
-            style={{ color: "#4a6080" }}
+            style={{ color: "var(--text-faint)" }}
           >
             ← cambiar equipo
           </button>
@@ -204,21 +196,21 @@ export default function MatchSelector({ onSelect, onClear }: Props) {
         {loadingMatches ? (
           <div
             className="px-4 py-3 rounded-xl text-sm text-center"
-            style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", color: "#4a6080" }}
+            style={{ background: "rgba(var(--tint-rgb), 0.03)", border: "1px solid rgba(var(--tint-rgb), 0.07)", color: "var(--text-faint)" }}
           >
             Cargando partidos...
           </div>
         ) : matches.length === 0 ? (
           <div
             className="px-4 py-3 rounded-xl text-sm text-center"
-            style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", color: "#4a6080" }}
+            style={{ background: "rgba(var(--tint-rgb), 0.03)", border: "1px solid rgba(var(--tint-rgb), 0.07)", color: "var(--text-faint)" }}
           >
             No se encontraron próximos partidos para este equipo.
           </div>
         ) : (
           <div
             className="rounded-xl overflow-hidden"
-            style={{ border: "1px solid rgba(255,255,255,0.10)" }}
+            style={{ border: "1px solid rgba(var(--tint-rgb), 0.10)" }}
           >
             {matches.map((match, i) => (
               <button
@@ -227,25 +219,25 @@ export default function MatchSelector({ onSelect, onClear }: Props) {
                 onClick={() => handleSelectMatch(match)}
                 className="flex items-center gap-3 w-full px-3 py-3 text-left transition-all"
                 style={{
-                  borderBottom: i < matches.length - 1 ? "1px solid rgba(255,255,255,0.05)" : "none",
+                  borderBottom: i < matches.length - 1 ? "1px solid rgba(var(--tint-rgb), 0.05)" : "none",
                   background:   "transparent",
                 }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(34,197,94,0.07)"; }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(var(--primary-rgb), 0.07)"; }}
                 onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
               >
                 <TeamBadge url={match.strHomeTeamBadge} name={match.strHomeTeam} size={22} />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-bold truncate" style={{ color: "#e8f0fe" }}>
                     {match.strHomeTeam}
-                    <span className="font-normal mx-1.5" style={{ color: "#3a5070" }}>vs</span>
+                    <span className="font-normal mx-1.5" style={{ color: "var(--text-dim)" }}>vs</span>
                     {match.strAwayTeam}
                   </p>
-                  <p className="text-xs mt-0.5" style={{ color: "#4a6080" }}>
+                  <p className="text-xs mt-0.5" style={{ color: "var(--text-faint)" }}>
                     {match.strLeague} · {formatDate(getUSLocalDate(match.dateEvent, match.strTime))}
                   </p>
                 </div>
                 <TeamBadge url={match.strAwayTeamBadge} name={match.strAwayTeam} size={22} />
-                <span className="text-xs ml-1 flex-shrink-0" style={{ color: "#2a4060" }}>›</span>
+                <span className="text-xs ml-1 flex-shrink-0" style={{ color: "var(--text-dim)" }}>›</span>
               </button>
             ))}
           </div>
@@ -262,7 +254,7 @@ export default function MatchSelector({ onSelect, onClear }: Props) {
     <div className="space-y-2">
       {/* Acceso rápido por competición */}
       <div>
-        <p className="text-xs font-semibold mb-1.5" style={{ color: "#4a6080" }}>Acceso rápido</p>
+        <p className="text-xs font-semibold mb-1.5" style={{ color: "var(--text-faint)" }}>Acceso rápido</p>
         <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
           {COMPETITIONS.map((comp) => (
             <button
@@ -271,12 +263,12 @@ export default function MatchSelector({ onSelect, onClear }: Props) {
               onClick={() => handleSelectCompetition(comp.code, comp.label)}
               className="flex-shrink-0 text-xs font-bold px-3 py-1.5 rounded-full transition-all"
               style={{
-                background: "rgba(255,255,255,0.05)",
-                color: "#8fa8cc",
-                border: "1px solid rgba(255,255,255,0.09)",
+                background: "rgba(var(--tint-rgb), 0.05)",
+                color: "var(--text-2)",
+                border: "1px solid rgba(var(--tint-rgb), 0.09)",
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(34,197,94,0.10)"; e.currentTarget.style.color = "#4ade80"; e.currentTarget.style.borderColor = "rgba(34,197,94,0.25)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; e.currentTarget.style.color = "#8fa8cc"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.09)"; }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(var(--primary-rgb), 0.10)"; e.currentTarget.style.color = "var(--primary-light)"; e.currentTarget.style.borderColor = "rgba(var(--primary-rgb), 0.25)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(var(--tint-rgb), 0.05)"; e.currentTarget.style.color = "var(--text-2)"; e.currentTarget.style.borderColor = "rgba(var(--tint-rgb), 0.09)"; }}
             >
               {comp.label}
             </button>
@@ -284,7 +276,7 @@ export default function MatchSelector({ onSelect, onClear }: Props) {
         </div>
       </div>
 
-      <label className="text-sm font-semibold" style={{ color: "#8fa8cc" }}>O buscá un equipo</label>
+      <label className="text-sm font-semibold" style={{ color: "var(--text-2)" }}>O buscá un equipo</label>
       <div className="relative">
         <input
           type="text"
@@ -304,7 +296,7 @@ export default function MatchSelector({ onSelect, onClear }: Props) {
           >
             {showEmpty ? (
               <div className="px-4 py-3 space-y-2">
-                <p className="text-sm" style={{ color: "#4a6080" }}>No encontrado en equipos de liga.</p>
+                <p className="text-sm" style={{ color: "var(--text-faint)" }}>No encontrado en equipos de liga.</p>
                 <button
                   type="button"
                   onMouseDown={() => handleSelectCompetition("WC", "🌍 Mundial 2026")}
@@ -321,14 +313,14 @@ export default function MatchSelector({ onSelect, onClear }: Props) {
                   type="button"
                   onMouseDown={() => handleSelectTeam(team)}
                   className="flex items-center gap-3 w-full px-3 py-2.5 text-left transition-all"
-                  style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}
-                  onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(34,197,94,0.08)"; }}
+                  style={{ borderBottom: "1px solid rgba(var(--tint-rgb), 0.04)" }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(var(--primary-rgb), 0.08)"; }}
                   onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
                 >
                   <TeamBadge url={team.logo} name={team.name} size={26} />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-bold truncate" style={{ color: "#e8f0fe" }}>{team.name}</p>
-                    <p className="text-xs" style={{ color: "#4a6080" }}>{team.league}</p>
+                    <p className="text-xs" style={{ color: "var(--text-faint)" }}>{team.league}</p>
                   </div>
                 </button>
               ))
