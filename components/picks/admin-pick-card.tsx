@@ -91,6 +91,21 @@ export default function AdminPickCard({ pick }: Props) {
   }[status];
 
   const hasScore = pick.home_score !== null && pick.away_score !== null;
+  // Un pick resuelto puede no tener marcador (picks viejos marcados a mano antes de
+  // guardar goles). En ese caso el mismo editor sirve para AGREGARLO.
+  const canEditScore = status !== "pending";
+
+  const editButton = !editScore && (
+    <button
+      onClick={() => setEditScore(true)}
+      title={hasScore ? "Corregir marcador" : "Agregar marcador"}
+      aria-label={hasScore ? "Corregir marcador" : "Agregar marcador"}
+      className="text-xs px-1.5 py-0.5 rounded-md transition-colors hover:bg-white/10"
+      style={{ color: "var(--text-3)" }}
+    >
+      ✏️
+    </button>
+  );
 
   if (deleted) return null;
 
@@ -134,21 +149,13 @@ export default function AdminPickCard({ pick }: Props) {
             <span className="font-black text-base" style={{ color: "var(--text)" }}>
               {pick.home_score} - {pick.away_score}
             </span>
-            {/* Abre el editor "Corregir marcador" (antes existía pero no había cómo abrirlo) */}
-            {!editScore && (
-              <button
-                onClick={() => setEditScore(true)}
-                title="Corregir marcador"
-                aria-label="Corregir marcador"
-                className="text-xs px-1.5 py-0.5 rounded-md transition-colors hover:bg-white/10"
-                style={{ color: "var(--text-3)" }}
-              >
-                ✏️
-              </button>
-            )}
+            {editButton}
           </span>
         ) : (
-          <span className="font-black text-xs flex-shrink-0" style={{ color: "var(--text-dim)" }}>VS</span>
+          <span className="flex items-center gap-2 flex-shrink-0">
+            <span className="font-black text-xs" style={{ color: "var(--text-dim)" }}>VS</span>
+            {canEditScore && editButton}
+          </span>
         )}
         <span className="font-black text-sm flex-1 text-right" style={{ color: "var(--text)" }}>{pick.away_team}</span>
       </div>
@@ -169,13 +176,13 @@ export default function AdminPickCard({ pick }: Props) {
         </p>
       )}
 
-      {/* Editor de marcador (solo si ya tiene score) */}
-      {hasScore && editScore && (
+      {/* Editor de marcador: corrige el que hay o agrega uno si falta */}
+      {canEditScore && editScore && (
         <div className="flex items-center gap-2 rounded-xl px-3 py-2.5" style={{
           background: "rgba(var(--tint-rgb), 0.04)",
           border: "1px solid rgba(var(--tint-rgb), 0.10)",
         }}>
-          <span className="text-xs font-semibold flex-1" style={{ color: "var(--text-3)" }}>Corregir marcador:</span>
+          <span className="text-xs font-semibold flex-1" style={{ color: "var(--text-3)" }}>{hasScore ? "Corregir marcador:" : "Agregar marcador:"}</span>
           <input
             type="number" min={0} max={99}
             value={homeScore}
