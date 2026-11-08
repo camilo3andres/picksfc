@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -78,6 +78,8 @@ export default function PickCard({ pick, currentUserId, userLiked, defaultShowCo
   const [following, setFollowing]       = useState(initialIsFollowing ?? false);
   const [copied, setCopied]             = useState(false);
   const [sharing, setSharing]           = useState(false);
+  // true mientras un like viaja al servidor: evita mandar dos a la vez con doble clic
+  const likePending = useRef(false);
 
   // Cuando llega un dato nuevo en vivo (otro usuario dio like o comentó), los
   // contadores se actualizan. Es el patrón que recomienda React para "ajustar
@@ -159,16 +161,33 @@ export default function PickCard({ pick, currentUserId, userLiked, defaultShowCo
 
   async function handleLike() {
     if (!currentUserId) { router.push("/login"); return; }
+    if (likePending.current) return;
+    likePending.current = true;
+
+    // Actualización optimista: el corazón y el número cambian YA, sin esperar
+    // al servidor (~0.5 s). Guardamos el estado anterior por si hay que revertir.
+    const prevLiked = liked;
+    const prevCount = likesCount;
+    setLiked(!prevLiked);
+    setLikesCount(prevCount + (prevLiked ? -1 : 1));
     setAnimating(true);
     setTimeout(() => setAnimating(false), 300);
-    const { data } = await supabase.rpc("toggle_like", {
+
+    const { data, error } = await supabase.rpc("toggle_like", {
       p_pick_id: pick.id,
       p_user_id: currentUserId,
     });
-    if (data?.[0]) {
+
+    if (error || !data?.[0]) {
+      // Falló: volvemos a como estaba antes del clic
+      setLiked(prevLiked);
+      setLikesCount(prevCount);
+    } else {
+      // Éxito: usamos el valor real del servidor (por si otro usuario dio like a la vez)
       setLiked(data[0].liked);
       setLikesCount(data[0].new_count);
     }
+    likePending.current = false;
   }
 
   return (
