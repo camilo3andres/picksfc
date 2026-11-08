@@ -130,8 +130,22 @@ export default function AdminPickCard({ pick }: Props) {
       }}>
         <span className="font-black text-sm flex-1" style={{ color: "var(--text)" }}>{pick.home_team}</span>
         {hasScore ? (
-          <span className="font-black text-base flex-shrink-0" style={{ color: "var(--text)" }}>
-            {pick.home_score} - {pick.away_score}
+          <span className="flex items-center gap-2 flex-shrink-0">
+            <span className="font-black text-base" style={{ color: "var(--text)" }}>
+              {pick.home_score} - {pick.away_score}
+            </span>
+            {/* Abre el editor "Corregir marcador" (antes existía pero no había cómo abrirlo) */}
+            {!editScore && (
+              <button
+                onClick={() => setEditScore(true)}
+                title="Corregir marcador"
+                aria-label="Corregir marcador"
+                className="text-xs px-1.5 py-0.5 rounded-md transition-colors hover:bg-white/10"
+                style={{ color: "var(--text-3)" }}
+              >
+                ✏️
+              </button>
+            )}
           </span>
         ) : (
           <span className="font-black text-xs flex-shrink-0" style={{ color: "var(--text-dim)" }}>VS</span>
