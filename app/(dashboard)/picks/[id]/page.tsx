@@ -1,7 +1,9 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase-server";
-import PickCard from "@/components/picks/pick-card";
+import { createClient, getSessionUser } from "@/lib/supabase-server";
+import LivePickList from "@/components/picks/live-pick-list";
+import type { LivePick } from "@/lib/use-live-picks";
+import Avatar from "@/components/ui/avatar";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -11,7 +13,7 @@ export default async function PickDetailPage({ params }: Props) {
   const { id } = await params;
   const supabase = await createClient();
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getSessionUser();
 
   const { data: pick } = await supabase
     .from("picks")
@@ -45,40 +47,38 @@ export default async function PickDetailPage({ params }: Props) {
       <Link
         href="/feed"
         className="inline-flex items-center gap-1.5 text-sm font-semibold transition-colors"
-        style={{ color: "#5a7a9a" }}
+        style={{ color: "var(--text-muted)" }}
       >
         ← Volver al feed
       </Link>
 
       {/* Pick */}
-      <PickCard
-        pick={pick as any}
+      <LivePickList
+        picks={[pick as LivePick]}
+        channel={`pick-${pick.id}`}
+        filter={`id=eq.${pick.id}`}
+        acceptInserts={false}
         currentUserId={user?.id ?? null}
-        userLiked={userLiked}
-        defaultShowComments={true}
+        likedIds={userLiked ? [pick.id] : []}
+        defaultShowComments
       />
 
       {/* Autor */}
       <div className="rounded-2xl px-5 py-4" style={{
-        background: "#162742",
-        border: "1px solid rgba(255,255,255,0.06)",
+        background: "var(--surface)",
+        border: "1px solid rgba(var(--tint-rgb), 0.06)",
       }}>
-        <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "#5a7a9a" }}>
+        <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--text-muted)" }}>
           Sobre el autor
         </p>
         <div className="flex items-center gap-3 mb-4">
-          <div
-            className="w-10 h-10 rounded-full flex items-center justify-center text-white font-black"
-            style={{ background: "linear-gradient(135deg, #22c55e, #15803d)" }}
-          >
-            {pick.profiles.username[0].toUpperCase()}
-          </div>
+          <Avatar username={pick.profiles.username} size={40} glow />
           <div>
-            <p className="font-black text-sm" style={{ color: "#f0f6ff" }}>@{pick.profiles.username}</p>
+            <p className="font-black text-sm" style={{ color: "var(--text)" }}>@{pick.profiles.username}</p>
             <Link
               href={`/profile/${pick.profiles.username}`}
               className="text-xs transition-colors"
-              style={{ color: "#4ade80" }}
+              style={{ color: "var(--primary-light)" }}
             >
               Ver perfil completo →
             </Link>
@@ -87,16 +87,16 @@ export default async function PickDetailPage({ params }: Props) {
 
         <div className="grid grid-cols-3 gap-2">
           {[
-            { label: "Total picks", value: total,    color: "#8fa8cc" },
-            { label: "Correctos",   value: correct,  color: "#4ade80" },
-            { label: "Precisión",   value: `${accuracy}%`, color: accuracy >= 70 ? "#4ade80" : accuracy >= 50 ? "#fbbf24" : "#f87171" },
+            { label: "Total picks", value: total,    color: "var(--text-2)" },
+            { label: "Correctos",   value: correct,  color: "var(--success)" },
+            { label: "Precisión",   value: `${accuracy}%`, color: accuracy >= 70 ? "var(--success)" : accuracy >= 50 ? "#fbbf24" : "#f87171" },
           ].map(({ label, value, color }) => (
             <div key={label} className="rounded-xl px-3 py-2.5 text-center" style={{
-              background: "rgba(255,255,255,0.03)",
-              border: "1px solid rgba(255,255,255,0.06)",
+              background: "rgba(var(--tint-rgb), 0.03)",
+              border: "1px solid rgba(var(--tint-rgb), 0.06)",
             }}>
               <p className="text-lg font-black" style={{ color }}>{value}</p>
-              <p className="text-xs mt-0.5" style={{ color: "#5a7a9a" }}>{label}</p>
+              <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>{label}</p>
             </div>
           ))}
         </div>

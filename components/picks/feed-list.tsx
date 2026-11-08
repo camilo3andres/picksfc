@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase";
-import { Pick } from "@/lib/types";
+import { FEED_PAGE_SIZE } from "@/lib/picks";
+import { useLivePicks, type LivePick } from "@/lib/use-live-picks";
 import PickCard from "./pick-card";
-import Link from "next/link";
+import Image from "next/image";
 
-type PickWithProfile = Pick & { profiles: { username: string } };
+type PickWithProfile = LivePick;
 
 type Props = {
   initialPicks: PickWithProfile[];
@@ -53,56 +54,54 @@ function buildDateRange() {
 
 export default function FeedList({ initialPicks, initialLikedIds, currentUserId, followingIds: initialFollowingIds }: Props) {
   const DATE_RANGE = buildDateRange();
-  const [picks, setPicks] = useState<PickWithProfile[]>(initialPicks);
+  // Picks en vivo: likes, resultados, picks nuevos y borrados llegan sin recargar
+  const [picks, setPicks] = useLivePicks(initialPicks, { channel: "feed-picks" });
+  const [likedIds, setLikedIds] = useState<string[]>(initialLikedIds);
+  const [hasMore, setHasMore] = useState(initialPicks.length === FEED_PAGE_SIZE);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [league, setLeague] = useState<string | null>(null);
   const [dateFilter, setDateFilter] = useState<string | null>(null);
   const [feedTab, setFeedTab] = useState<"all" | "following">("all");
   const [followingIds, setFollowingIds] = useState<string[]>(initialFollowingIds);
 
+  // Si alguien sigue/deja de seguir desde otra pestaña, el filtro "Siguiendo" se entera
   useEffect(() => {
     if (!currentUserId) return;
-    async function fetchFollowing() {
-      const { data } = await supabase
-        .from("follows")
-        .select("following_id")
-        .eq("follower_id", currentUserId);
-      if (data) setFollowingIds(data.map((f) => f.following_id));
-    }
-    fetchFollowing();
+    const supabase = createClient();
+    supabase
+      .from("follows")
+      .select("following_id")
+      .eq("follower_id", currentUserId)
+      .then(({ data }) => {
+        if (data) setFollowingIds(data.map((f) => f.following_id));
+      });
   }, [currentUserId]);
-  const supabase = createClient();
 
-  useEffect(() => {
-    const channel = supabase
-      .channel("picks-realtime")
-      .on(
-        "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "picks" },
-        (payload) => {
-          setPicks((current) =>
-            current.map((pick) =>
-              pick.id === payload.new.id ? { ...pick, ...payload.new } : pick
-            )
-          );
-        }
-      )
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "picks" },
-        async () => {
-          const { data } = await supabase
-            .from("picks")
-            .select("*, profiles(username)")
-            .order("created_at", { ascending: false });
-          if (data) setPicks(data as PickWithProfile[]);
-        }
-      )
-      .subscribe();
+  // Siguiente tanda de picks (más viejos) + los likes del usuario en esa tanda
+  async function loadMore() {
+    setLoadingMore(true);
+    const supabase = createClient();
+    const { data } = await supabase
+      .from("picks")
+      .select("*, profiles(username, is_verified)")
+      .order("created_at", { ascending: false })
+      .range(picks.length, picks.length + FEED_PAGE_SIZE - 1);
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
+    const page = (data ?? []) as PickWithProfile[];
+    if (currentUserId && page.length) {
+      const { data: likes } = await supabase
+        .from("likes")
+        .select("pick_id")
+        .eq("user_id", currentUserId)
+        .in("pick_id", page.map((p) => p.id));
+      setLikedIds((prev) => [...prev, ...(likes ?? []).map((l) => l.pick_id)]);
+    }
+
+    // Evita duplicados si mientras tanto llegó un pick nuevo en vivo
+    setPicks((prev) => [...prev, ...page.filter((p) => !prev.some((q) => q.id === p.id))]);
+    setHasMore(page.length === FEED_PAGE_SIZE);
+    setLoadingMore(false);
+  }
 
   // Racha por usuario: picks resueltos consecutivos más recientes
   const streakMap: Record<string, number> = {};
@@ -134,27 +133,40 @@ export default function FeedList({ initialPicks, initialLikedIds, currentUserId,
   return (
     <div className="space-y-3">
 
-      {/* Fila 1: Siguiendo */}
-      {currentUserId && (
-        <div>
-          <button
-            onClick={() => setFeedTab(feedTab === "following" ? "all" : "following")}
-            className="text-xs font-bold px-3 py-1.5 rounded-xl transition-all"
-            style={feedTab === "following" ? {
-              background: "linear-gradient(135deg, #22c55e, #16a34a)",
-              color: "#fff",
-              boxShadow: "0 2px 10px rgba(34,197,94,0.28)",
-              border: "1px solid transparent",
-            } : {
-              background: "rgba(255,255,255,0.04)",
-              color: "#6b87ab",
-              border: "1px solid rgba(255,255,255,0.08)",
-            }}
+      {/* Encabezado: título + selector Todos / Siguiendo */}
+      <div className="flex items-center justify-between gap-3 flex-wrap pb-2">
+        <h1 className="text-white text-2xl font-black tracking-tight flex items-center gap-2">
+          <Image src="/icon.png" alt="" width={28} height={28} className="inline-block flex-shrink-0" />
+          <span><span style={{ color: "var(--primary-light)" }}>Picks</span> de la comunidad</span>
+        </h1>
+
+        {currentUserId && (
+          <div
+            role="tablist"
+            aria-label="Filtrar picks"
+            className="flex p-1 rounded-xl"
+            style={{ background: "rgba(var(--tint-rgb), 0.06)", border: "1px solid rgba(var(--tint-rgb), 0.10)" }}
           >
-            👥 Siguiendo
-          </button>
-        </div>
-      )}
+            {([["all", "Todos"], ["following", "Siguiendo"]] as const).map(([tab, label]) => {
+              const active = feedTab === tab;
+              return (
+                <button
+                  key={tab}
+                  role="tab"
+                  aria-selected={active}
+                  onClick={() => setFeedTab(tab)}
+                  className="px-4 py-1.5 rounded-lg text-sm font-bold transition-all"
+                  style={active
+                    ? { background: "linear-gradient(135deg, var(--primary), var(--primary-strong))", color: "#fff", boxShadow: "0 2px 10px rgba(var(--primary-rgb), 0.28)" }
+                    : { color: "var(--text-3)" }}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
 
       {/* Fila 2: Fecha */}
       <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
@@ -167,14 +179,14 @@ export default function FeedList({ initialPicks, initialLikedIds, currentUserId,
               onClick={() => setDateFilter(active ? null : iso)}
               className="flex-shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-200"
               style={active ? {
-                background: "linear-gradient(135deg, #22c55e, #16a34a)",
+                background: "linear-gradient(135deg, var(--primary), var(--primary-strong))",
                 color: "#fff",
-                boxShadow: "0 2px 10px rgba(34,197,94,0.28)",
+                boxShadow: "0 2px 10px rgba(var(--primary-rgb), 0.28)",
                 border: "1px solid transparent",
               } : {
-                background: isToday ? "rgba(34,197,94,0.07)" : "rgba(255,255,255,0.04)",
-                color: isToday ? "#4ade80" : "#6b87ab",
-                border: isToday ? "1px solid rgba(34,197,94,0.18)" : "1px solid rgba(255,255,255,0.08)",
+                background: isToday ? "rgba(var(--primary-rgb), 0.07)" : "rgba(var(--tint-rgb), 0.04)",
+                color: isToday ? "var(--primary-light)" : "var(--text-3)",
+                border: isToday ? "1px solid rgba(var(--primary-rgb), 0.18)" : "1px solid rgba(var(--tint-rgb), 0.08)",
               }}
             >
               {label}
@@ -194,14 +206,14 @@ export default function FeedList({ initialPicks, initialLikedIds, currentUserId,
               onClick={() => setLeague(active ? null : l)}
               className="flex-shrink-0 flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full transition-all duration-200"
               style={active ? {
-                background: "linear-gradient(135deg, #22c55e, #16a34a)",
+                background: "linear-gradient(135deg, var(--primary), var(--primary-strong))",
                 color: "#fff",
-                boxShadow: "0 2px 10px rgba(34,197,94,0.28)",
+                boxShadow: "0 2px 10px rgba(var(--primary-rgb), 0.28)",
                 border: "1px solid transparent",
               } : {
-                background: "rgba(255,255,255,0.04)",
-                color: "#6b87ab",
-                border: "1px solid rgba(255,255,255,0.08)",
+                background: "rgba(var(--tint-rgb), 0.04)",
+                color: "var(--text-3)",
+                border: "1px solid rgba(var(--tint-rgb), 0.08)",
               }}
             >
               <span>{icon}</span>
@@ -217,21 +229,21 @@ export default function FeedList({ initialPicks, initialLikedIds, currentUserId,
           {feedTab === "following" && followingIds.length === 0 ? (
             <>
               <p className="text-3xl mb-3">👥</p>
-              <p className="font-medium" style={{ color: "#4a6080" }}>
-                Aún no seguís a nadie
+              <p className="font-medium" style={{ color: "var(--text-faint)" }}>
+                Aún no sigues a nadie
               </p>
-              <p className="text-sm mt-1" style={{ color: "#3a5070" }}>
-                Entrá a un perfil y dale "+ Seguir"
+              <p className="text-sm mt-1" style={{ color: "var(--text-dim)" }}>
+                Entra a un perfil y dale «+ Seguir»
               </p>
             </>
           ) : (
             <>
               <p className="text-3xl mb-3">🔍</p>
-              <p className="font-medium" style={{ color: "#4a6080" }}>No hay picks con estos filtros</p>
+              <p className="font-medium" style={{ color: "var(--text-faint)" }}>No hay picks con estos filtros</p>
               <button
                 onClick={() => { setLeague(null); setDateFilter(null); setFeedTab("all"); }}
                 className="mt-3 text-sm transition-colors"
-                style={{ color: "#22c55e" }}
+                style={{ color: "var(--primary)" }}
               >
                 Limpiar filtros
               </button>
@@ -245,7 +257,7 @@ export default function FeedList({ initialPicks, initialLikedIds, currentUserId,
               key={pick.id}
               pick={pick}
               currentUserId={currentUserId}
-              userLiked={initialLikedIds.includes(pick.id)}
+              userLiked={likedIds.includes(pick.id)}
               isFollowing={followingIds.includes(pick.user_id)}
               streak={streakMap[pick.user_id] ?? 0}
               onFollowChange={(userId, nowFollowing) => {
@@ -256,6 +268,20 @@ export default function FeedList({ initialPicks, initialLikedIds, currentUserId,
               onDelete={(pickId) => setPicks((prev) => prev.filter((p) => p.id !== pickId))}
             />
           ))}
+        </div>
+      )}
+
+      {/* Paginación: los filtros trabajan sobre los picks ya cargados */}
+      {hasMore && (
+        <div className="flex justify-center pt-2">
+          <button
+            onClick={loadMore}
+            disabled={loadingMore}
+            className="px-6 py-2.5 rounded-xl text-sm font-bold transition-all disabled:opacity-60"
+            style={{ color: "var(--text-2)", background: "rgba(var(--tint-rgb), 0.06)", border: "1px solid rgba(var(--tint-rgb), 0.12)" }}
+          >
+            {loadingMore ? "Cargando…" : "Cargar más picks"}
+          </button>
         </div>
       )}
     </div>

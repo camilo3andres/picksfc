@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase-server";
-import PickCard from "@/components/picks/pick-card";
+import { createClient, getSessionUser } from "@/lib/supabase-server";
+import LivePickList from "@/components/picks/live-pick-list";
+import type { LivePick } from "@/lib/use-live-picks";
 import FollowButton from "@/components/profile/follow-button";
 import VerifiedBadge from "@/components/ui/verified-badge";
 import { getAvatarColor } from "@/lib/utils";
@@ -16,11 +17,10 @@ export default async function ProfilePage({ params }: Props) {
   const supabase = await createClient();
 
   // Ronda 1: user y profile en paralelo (no dependen uno del otro)
-  const [authResult, { data: profile }] = await Promise.all([
-    supabase.auth.getUser(),
+  const [user, { data: profile }] = await Promise.all([
+    getSessionUser(),
     supabase.from("profiles").select("*").eq("username", username).single(),
   ]);
-  const user = authResult.data.user;
 
   if (!profile) notFound();
 
@@ -78,15 +78,15 @@ export default async function ProfilePage({ params }: Props) {
 
       {/* HERO — banner del perfil */}
       <div className="rounded-2xl overflow-hidden" style={{
-        background: "#162742",
-        boxShadow: "0 4px 18px rgba(0,0,0,0.28), 0 0 0 1px rgba(255,255,255,0.05)",
+        background: "var(--surface)",
+        boxShadow: "0 4px 18px rgba(0,0,0,0.28), 0 0 0 1px rgba(var(--tint-rgb), 0.05)",
       }}>
         {/* Franja superior decorativa */}
         <div className="h-20" style={{
           backgroundImage: `
-            radial-gradient(circle at 20% 50%, rgba(34,197,94,0.10) 0%, transparent 55%),
+            radial-gradient(circle at 20% 50%, rgba(var(--primary-rgb), 0.10) 0%, transparent 55%),
             radial-gradient(circle at 80% 30%, rgba(59,130,246,0.08) 0%, transparent 50%),
-            linear-gradient(135deg, #0f1d35 0%, #1a2d4a 50%, #0f1d35 100%)
+            linear-gradient(135deg, var(--nav) 0%, var(--card-top) 50%, var(--nav) 100%)
           `,
           backgroundBlendMode: "soft-light",
         }} />
@@ -108,7 +108,7 @@ export default async function ProfilePage({ params }: Props) {
             <div className="pb-1 flex-1">
               <div className="flex items-center justify-between gap-2 flex-wrap">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h1 className="text-xl font-black inline-flex items-center gap-1.5" style={{ color: "#f0f6ff" }}>
+                  <h1 className="text-xl font-black inline-flex items-center gap-1.5" style={{ color: "var(--text)" }}>
                     @{profile.username}
                     {profile.is_verified && <VerifiedBadge size={18} />}
                   </h1>
@@ -120,7 +120,7 @@ export default async function ProfilePage({ params }: Props) {
                   )}
                   {accuracy >= 70 && resolvedPicks >= 5 && (
                     <span className="text-xs font-bold px-2 py-0.5 rounded-full"
-                      style={{ background: "rgba(34,197,94,0.12)", color: "#4ade80", border: "1px solid rgba(34,197,94,0.25)" }}>
+                      style={{ background: "rgba(var(--primary-rgb), 0.12)", color: "var(--primary-light)", border: "1px solid rgba(var(--primary-rgb), 0.25)" }}>
                       ⭐ Top pronosticador
                     </span>
                   )}
@@ -129,7 +129,7 @@ export default async function ProfilePage({ params }: Props) {
                   <a
                     href="/profile/edit"
                     className="text-xs font-bold px-3 py-1.5 rounded-lg transition-all"
-                    style={{ background: "rgba(255,255,255,0.07)", color: "#8fa8cc", border: "1px solid rgba(255,255,255,0.10)" }}
+                    style={{ background: "rgba(var(--tint-rgb), 0.07)", color: "var(--text-2)", border: "1px solid rgba(var(--tint-rgb), 0.10)" }}
                   >
                     Editar perfil
                   </a>
@@ -137,20 +137,21 @@ export default async function ProfilePage({ params }: Props) {
                   <FollowButton
                     currentUserId={user.id}
                     targetUserId={profile.id}
+                    targetUsername={profile.username}
                     initialFollowing={isFollowing}
                   />
                 )}
               </div>
               <div className="flex items-center gap-3 mt-1">
-                <span className="text-xs" style={{ color: "#5a7a9a" }}>
-                  <span className="font-bold" style={{ color: "#8fa8cc" }}>{followersCount ?? 0}</span> seguidores
+                <span className="text-xs" style={{ color: "var(--text-muted)" }}>
+                  <span className="font-bold" style={{ color: "var(--text-2)" }}>{followersCount ?? 0}</span> seguidores
                 </span>
-                <span className="text-xs" style={{ color: "#5a7a9a" }}>
-                  <span className="font-bold" style={{ color: "#8fa8cc" }}>{followingCount ?? 0}</span> siguiendo
+                <span className="text-xs" style={{ color: "var(--text-muted)" }}>
+                  <span className="font-bold" style={{ color: "var(--text-2)" }}>{followingCount ?? 0}</span> siguiendo
                 </span>
               </div>
               {profile.bio && (
-                <p className="text-sm mt-0.5" style={{ color: "#6b87ab" }}>{profile.bio}</p>
+                <p className="text-sm mt-0.5" style={{ color: "var(--text-3)" }}>{profile.bio}</p>
               )}
 
               {/* Redes sociales */}
@@ -178,7 +179,7 @@ export default async function ProfilePage({ params }: Props) {
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full transition-opacity hover:opacity-75"
-                      style={{ background: "rgba(255,255,255,0.07)", color: "#d1d5db", border: "1px solid rgba(255,255,255,0.12)" }}
+                      style={{ background: "rgba(var(--tint-rgb), 0.07)", color: "#d1d5db", border: "1px solid rgba(var(--tint-rgb), 0.12)" }}
                     >
                       <Music2 size={10} />
                       @{profile.tiktok}
@@ -216,7 +217,7 @@ export default async function ProfilePage({ params }: Props) {
                 </div>
               )}
 
-              <p className="text-xs mt-0.5" style={{ color: "#5a7a9a" }}>
+              <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>
                 Miembro desde {new Date(profile.created_at).toLocaleDateString("es-ES", { month: "long", year: "numeric" })}
               </p>
             </div>
@@ -225,14 +226,14 @@ export default async function ProfilePage({ params }: Props) {
           {/* Stats principales */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
-              { value: totalPicks,     label: "Total picks",  color: "#8fa8cc", bg: "rgba(143,168,204,0.08)", border: "rgba(143,168,204,0.12)" },
-              { value: correctPicks,   label: "Correctos",    color: "#4ade80", bg: "rgba(74,222,128,0.08)",  border: "rgba(74,222,128,0.15)"  },
+              { value: totalPicks,     label: "Total picks",  color: "var(--text-2)", bg: "rgba(var(--text-2-rgb), 0.08)", border: "rgba(var(--text-2-rgb), 0.12)" },
+              { value: correctPicks,   label: "Correctos",    color: "var(--success)", bg: "rgba(var(--success-rgb), 0.08)",  border: "rgba(var(--success-rgb), 0.15)"  },
               { value: incorrectPicks, label: "Incorrectos",  color: "#f87171", bg: "rgba(248,113,113,0.08)", border: "rgba(248,113,113,0.15)" },
               { value: pendingPicks,   label: "Pendientes",   color: "#fbbf24", bg: "rgba(251,191,36,0.08)",  border: "rgba(251,191,36,0.15)"  },
             ].map(({ value, label, color, bg, border }) => (
               <div key={label} className="rounded-xl px-3 py-3 text-center" style={{ background: bg, border: `1px solid ${border}` }}>
                 <p className="text-2xl font-black" style={{ color }}>{value}</p>
-                <p className="text-xs font-medium mt-0.5" style={{ color: "#5a7a9a" }}>{label}</p>
+                <p className="text-xs font-medium mt-0.5" style={{ color: "var(--text-muted)" }}>{label}</p>
               </div>
             ))}
           </div>
@@ -242,41 +243,41 @@ export default async function ProfilePage({ params }: Props) {
 
             {/* Barra de precisión */}
             <div className="sm:col-span-1 rounded-xl px-4 py-3" style={{
-              background: "rgba(255,255,255,0.03)",
-              border: "1px solid rgba(255,255,255,0.06)",
+              background: "rgba(var(--tint-rgb), 0.03)",
+              border: "1px solid rgba(var(--tint-rgb), 0.06)",
             }}>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-semibold" style={{ color: "#6b87ab" }}>Precisión</span>
+                <span className="text-xs font-semibold" style={{ color: "var(--text-3)" }}>Precisión</span>
                 <span className="text-lg font-black" style={{
-                  color: accuracy >= 70 ? "#4ade80" : accuracy >= 50 ? "#fbbf24" : "#f87171",
+                  color: accuracy >= 70 ? "var(--success)" : accuracy >= 50 ? "#fbbf24" : "#f87171",
                 }}>{accuracy}%</span>
               </div>
-              <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.06)" }}>
+              <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: "rgba(var(--tint-rgb), 0.06)" }}>
                 <div className="h-full rounded-full transition-all duration-700" style={{
                   width: `${accuracy}%`,
                   background: accuracy >= 70
-                    ? "linear-gradient(90deg, #22c55e, #4ade80)"
+                    ? "linear-gradient(90deg, var(--success-strong), var(--success))"
                     : accuracy >= 50
                     ? "linear-gradient(90deg, #d97706, #fbbf24)"
                     : "linear-gradient(90deg, #dc2626, #f87171)",
                 }} />
               </div>
-              <p className="text-xs mt-1.5" style={{ color: "#5a7a9a" }}>
+              <p className="text-xs mt-1.5" style={{ color: "var(--text-muted)" }}>
                 {resolvedPicks} picks resueltos
               </p>
             </div>
 
             {/* Racha */}
             <div className="rounded-xl px-4 py-3 flex items-center gap-3" style={{
-              background: streak >= 3 ? "rgba(251,191,36,0.07)" : "rgba(255,255,255,0.03)",
-              border: streak >= 3 ? "1px solid rgba(251,191,36,0.18)" : "1px solid rgba(255,255,255,0.06)",
+              background: streak >= 3 ? "rgba(251,191,36,0.07)" : "rgba(var(--tint-rgb), 0.03)",
+              border: streak >= 3 ? "1px solid rgba(251,191,36,0.18)" : "1px solid rgba(var(--tint-rgb), 0.06)",
             }}>
               <span className="text-2xl">{streak >= 3 ? "🔥" : streak >= 1 ? "⚡" : "💤"}</span>
               <div>
-                <p className="text-lg font-black" style={{ color: streak >= 3 ? "#fbbf24" : "#6b87ab" }}>
+                <p className="text-lg font-black" style={{ color: streak >= 3 ? "#fbbf24" : "var(--text-3)" }}>
                   {streak === 0 ? "Sin racha" : `${streak} correctos`}
                 </p>
-                <p className="text-xs" style={{ color: "#5a7a9a" }}>
+                <p className="text-xs" style={{ color: "var(--text-muted)" }}>
                   {streak === 0 ? "Racha actual" : "en racha"}
                 </p>
               </div>
@@ -284,22 +285,22 @@ export default async function ProfilePage({ params }: Props) {
 
             {/* Mejor liga */}
             <div className="rounded-xl px-4 py-3 flex items-center gap-3" style={{
-              background: bestLeague ? "rgba(34,197,94,0.06)" : "rgba(255,255,255,0.03)",
-              border: bestLeague ? "1px solid rgba(34,197,94,0.14)" : "1px solid rgba(255,255,255,0.06)",
+              background: bestLeague ? "rgba(var(--primary-rgb), 0.06)" : "rgba(var(--tint-rgb), 0.03)",
+              border: bestLeague ? "1px solid rgba(var(--primary-rgb), 0.14)" : "1px solid rgba(var(--tint-rgb), 0.06)",
             }}>
               <span className="text-2xl">🏆</span>
               <div className="min-w-0">
                 {bestLeague ? (
                   <>
-                    <p className="text-sm font-black truncate" style={{ color: "#4ade80" }}>{bestLeague[0]}</p>
-                    <p className="text-xs" style={{ color: "#5a7a9a" }}>
+                    <p className="text-sm font-black truncate" style={{ color: "var(--primary-light)" }}>{bestLeague[0]}</p>
+                    <p className="text-xs" style={{ color: "var(--text-muted)" }}>
                       {bestLeague[1].correct}/{bestLeague[1].total} correctos
                     </p>
                   </>
                 ) : (
                   <>
-                    <p className="text-sm font-bold" style={{ color: "#5a7a9a" }}>Sin datos aún</p>
-                    <p className="text-xs" style={{ color: "#5a7a9a" }}>Mejor liga</p>
+                    <p className="text-sm font-bold" style={{ color: "var(--text-muted)" }}>Sin datos aún</p>
+                    <p className="text-xs" style={{ color: "var(--text-muted)" }}>Mejor liga</p>
                   </>
                 )}
               </div>
@@ -310,14 +311,14 @@ export default async function ProfilePage({ params }: Props) {
 
       {/* Picks del usuario */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between pb-3" style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-          <h2 className="font-black text-lg" style={{ color: "#f0f6ff" }}>
-            Picks de <span style={{ color: "#4ade80" }}>@{profile.username}</span>
+        <div className="flex items-center justify-between pb-3" style={{ borderBottom: "1px solid rgba(var(--tint-rgb), 0.05)" }}>
+          <h2 className="font-black text-lg" style={{ color: "var(--text)" }}>
+            Picks de <span style={{ color: "var(--primary-light)" }}>@{profile.username}</span>
           </h2>
           <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{
-            background: "rgba(255,255,255,0.05)",
-            color: "#6b87ab",
-            border: "1px solid rgba(255,255,255,0.08)",
+            background: "rgba(var(--tint-rgb), 0.05)",
+            color: "var(--text-3)",
+            border: "1px solid rgba(var(--tint-rgb), 0.08)",
           }}>
             {totalPicks} picks
           </span>
@@ -325,29 +326,28 @@ export default async function ProfilePage({ params }: Props) {
 
         {totalPicks === 0 ? (
           <div className="text-center py-16 rounded-2xl" style={{
-            background: "rgba(255,255,255,0.02)",
-            border: "1px solid rgba(255,255,255,0.05)",
+            background: "rgba(var(--tint-rgb), 0.02)",
+            border: "1px solid rgba(var(--tint-rgb), 0.05)",
           }}>
             <p className="text-4xl mb-3">⚽</p>
-            <p className="font-semibold" style={{ color: "#4a6080" }}>
+            <p className="font-semibold" style={{ color: "var(--text-faint)" }}>
               {isOwnProfile ? "Aún no publicaste picks" : "Este usuario aún no publicó picks"}
             </p>
             {isOwnProfile && (
-              <a href="/picks/new" className="inline-block mt-3 text-sm font-bold transition-colors" style={{ color: "#4ade80" }}>
+              <a href="/picks/new" className="inline-block mt-3 text-sm font-bold transition-colors" style={{ color: "var(--primary-light)" }}>
                 + Publicar primer pick →
               </a>
             )}
           </div>
         ) : (
-          picks?.map((pick) => (
-            <PickCard
-              key={pick.id}
-              pick={pick as any}
-              currentUserId={user?.id ?? null}
-              userLiked={likedPickIds.has(pick.id)}
-              isFollowing={isOwnProfile ? undefined : isFollowing}
-            />
-          ))
+          <LivePickList
+            picks={(picks ?? []) as LivePick[]}
+            channel={`profile-picks-${profile.id}`}
+            filter={`user_id=eq.${profile.id}`}
+            currentUserId={user?.id ?? null}
+            likedIds={[...likedPickIds]}
+            isFollowing={isOwnProfile ? undefined : isFollowing}
+          />
         )}
       </div>
     </div>

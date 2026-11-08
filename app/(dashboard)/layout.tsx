@@ -1,9 +1,9 @@
-import { createClient } from "@/lib/supabase-server";
+import { createClient, getSessionUser } from "@/lib/supabase-server";
 import Navbar from "@/components/navbar";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getSessionUser();
 
   let profile = null;
   if (user) {
@@ -16,9 +16,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   }
 
   return (
-    <div className="min-h-screen" style={{
-      background: "linear-gradient(90deg, #081120 0%, #0d1b33 20%, #10203d 50%, #0d1b33 80%, #081120 100%)",
-    }}>
+    <div className="app-bg min-h-screen">
       <Navbar username={profile?.username ?? null} isAdmin={profile?.is_admin ?? false} isLoggedIn={!!user} />
       <main className="max-w-4xl mx-auto px-4 py-6 pb-24 md:pb-6">
         {children}

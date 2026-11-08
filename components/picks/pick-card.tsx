@@ -1,14 +1,19 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase";
 import { Pick } from "@/lib/types";
-import { getAvatarColor, parseLocalDate } from "@/lib/utils";
+import { parseLocalDate } from "@/lib/utils";
+import { PREDICTION_LABEL } from "@/lib/picks";
 import CommentsSection from "./comments-section";
 import VerifiedBadge from "@/components/ui/verified-badge";
+import { CheckIcon, CommentIcon, HeartIcon, ShareIcon } from "@/components/ui/icons";
+import Avatar from "@/components/ui/avatar";
+import FollowToggle from "@/components/ui/follow-toggle";
+import PickOptionsMenu from "./pick-options-menu";
 
 type Props = {
   pick: Pick & { profiles: { username: string; is_verified?: boolean } };
@@ -19,14 +24,6 @@ type Props = {
   streak?: number;
   onFollowChange?: (userId: string, nowFollowing: boolean) => void;
   onDelete?: (pickId: string) => void;
-};
-
-const PREDICTION_LABEL = {
-  home:      "Gana Local",
-  draw:      "Empate",
-  away:      "Gana Visitante",
-  home_draw: "Local o Empate",
-  away_draw: "Visitante o Empate",
 };
 
 const PREDICTION_STYLE = {
@@ -46,22 +43,22 @@ const LEAGUE_STYLE: Record<string, { color: string; bg: string; border: string }
   "Bundesliga":             { color: "#fca5a5", bg: "rgba(185,28,28,0.12)",  border: "rgba(252,165,165,0.25)" },
   "Serie A":                { color: "#60a5fa", bg: "rgba(29,78,216,0.12)",  border: "rgba(96,165,250,0.25)" },
   "Ligue 1":                { color: "#38bdf8", bg: "rgba(14,165,233,0.12)", border: "rgba(56,189,248,0.25)" },
-  "Liga Dimayor":           { color: "#4ade80", bg: "rgba(22,163,74,0.12)",  border: "rgba(74,222,128,0.25)" },
+  "Liga Dimayor":           { color: "var(--success)", bg: "rgba(var(--success-strong-rgb), 0.12)",  border: "rgba(var(--success-rgb), 0.25)" },
   "FIFA World Cup":         { color: "#fbbf24", bg: "rgba(251,191,36,0.12)", border: "rgba(251,191,36,0.25)" },
   "UEFA Champions League 2024/25": { color: "#93c5fd", bg: "rgba(37,99,235,0.12)", border: "rgba(59,130,246,0.25)" },
 };
 
 const STATUS_CONFIG = {
   pending: {
-    glow: "0 8px 32px rgba(0,0,0,0.40), 0 0 0 1px rgba(255,255,255,0.05)",
-    glowHover: "0 16px 44px rgba(0,0,0,0.50), 0 0 0 1px rgba(255,255,255,0.09)",
+    glow: "0 8px 32px rgba(0,0,0,0.40), 0 0 0 1px rgba(var(--tint-rgb), 0.05)",
+    glowHover: "0 16px 44px rgba(0,0,0,0.50), 0 0 0 1px rgba(var(--tint-rgb), 0.09)",
     badge: { background: "rgba(245,158,11,0.12)", color: "#fbbf24", border: "1px solid rgba(245,158,11,0.25)" },
     label: "⏳ Pendiente",
   },
   correct: {
-    glow: "0 8px 32px rgba(0,0,0,0.40), 0 0 18px rgba(34,197,94,0.09), 0 0 0 1px rgba(34,197,94,0.14)",
-    glowHover: "0 16px 44px rgba(0,0,0,0.50), 0 0 26px rgba(34,197,94,0.14), 0 0 0 1px rgba(34,197,94,0.20)",
-    badge: { background: "rgba(34,197,94,0.12)", color: "#4ade80", border: "1px solid rgba(34,197,94,0.28)" },
+    glow: "0 8px 32px rgba(0,0,0,0.40), 0 0 18px rgba(var(--success-strong-rgb), 0.09), 0 0 0 1px rgba(var(--success-strong-rgb), 0.14)",
+    glowHover: "0 16px 44px rgba(0,0,0,0.50), 0 0 26px rgba(var(--success-strong-rgb), 0.14), 0 0 0 1px rgba(var(--success-strong-rgb), 0.20)",
+    badge: { background: "rgba(var(--success-strong-rgb), 0.12)", color: "var(--success)", border: "1px solid rgba(var(--success-strong-rgb), 0.28)" },
     label: "✅ Correcto",
   },
   incorrect: {
@@ -80,19 +77,28 @@ export default function PickCard({ pick, currentUserId, userLiked, defaultShowCo
   const [showComments, setShowComments] = useState(defaultShowComments);
   const [following, setFollowing]       = useState(initialIsFollowing ?? false);
   const [copied, setCopied]             = useState(false);
-  useEffect(() => { setFollowing(initialIsFollowing ?? false); }, [initialIsFollowing]);
-  const [followAnim, setFollowAnim]     = useState(false);
+  const [sharing, setSharing]           = useState(false);
+
+  // Cuando llega un dato nuevo en vivo (otro usuario dio like o comentó), los
+  // contadores se actualizan. Es el patrón que recomienda React para "ajustar
+  // estado cuando cambia una prop", sin useEffect: https://react.dev/learn/you-might-not-need-an-effect
+  const [synced, setSynced] = useState({ likes: pick.likes_count, comments: pick.comments_count, following: initialIsFollowing });
+  if (synced.likes !== pick.likes_count || synced.comments !== pick.comments_count || synced.following !== initialIsFollowing) {
+    setSynced({ likes: pick.likes_count, comments: pick.comments_count, following: initialIsFollowing });
+    if (synced.likes !== pick.likes_count) setLikesCount(pick.likes_count);
+    if (synced.comments !== pick.comments_count) setCommentsCount(pick.comments_count);
+    if (synced.following !== initialIsFollowing) setFollowing(initialIsFollowing ?? false);
+  }
+
   const router = useRouter();
   const supabase = createClient();
 
   const status   = STATUS_CONFIG[pick.status];
-  const league   = LEAGUE_STYLE[pick.league] ?? { color: "#8fa8cc", bg: "rgba(255,255,255,0.05)", border: "rgba(255,255,255,0.10)" };
+  const league   = LEAGUE_STYLE[pick.league] ?? { color: "var(--text-2)", bg: "rgba(var(--tint-rgb), 0.05)", border: "rgba(var(--tint-rgb), 0.10)" };
   const hasResult = pick.home_score !== null && pick.away_score !== null;
 
   async function handleFollow() {
     if (!currentUserId) { router.push("/login"); return; }
-    setFollowAnim(true);
-    setTimeout(() => setFollowAnim(false), 400);
     const { data } = await supabase.rpc("toggle_follow", {
       p_follower_id: currentUserId,
       p_following_id: pick.user_id,
@@ -104,19 +110,48 @@ export default function PickCard({ pick, currentUserId, userLiked, defaultShowCo
     router.refresh();
   }
 
+  // Compartir: en celular manda la imagen del pick + el link (WhatsApp, historias...).
+  // Si el navegador no puede compartir archivos, comparte solo el link; y si no puede
+  // compartir nada (computador), copia el link — al pegarlo, WhatsApp muestra la imagen igual.
   async function handleShare() {
     const url = `${window.location.origin}/picks/${pick.id}`;
-    if (navigator.share) {
-      await navigator.share({ title: `Pick de @${pick.profiles.username} en PicksFC`, url });
-    } else {
+    const text = `Mi pick para ${pick.home_team} vs ${pick.away_team} en PicksFC`;
+    setSharing(true);
+
+    try {
+      if (navigator.share) {
+        const file = await fetchShareImage();
+        if (file && navigator.canShare?.({ files: [file] })) {
+          await navigator.share({ files: [file], text: `${text}\n${url}` });
+        } else {
+          await navigator.share({ title: text, url });
+        }
+        return;
+      }
       await navigator.clipboard.writeText(url);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      // AbortError = el usuario cerró el menú de compartir; no es un error real
+      if ((err as Error).name !== "AbortError") console.error("No se pudo compartir:", err);
+    } finally {
+      setSharing(false);
+    }
+  }
+
+  async function fetchShareImage(): Promise<File | null> {
+    try {
+      const res = await fetch(`/api/picks/${pick.id}/image`);
+      if (!res.ok) return null;
+      const blob = await res.blob();
+      return new File([blob], `pick-${pick.home_team}-vs-${pick.away_team}.png`.replace(/\s+/g, "-"), { type: "image/png" });
+    } catch {
+      return null;
     }
   }
 
   async function handleDelete() {
-    if (!confirm("¿Seguro que querés borrar este pick?")) return;
+    if (!confirm("¿Seguro que quieres eliminar este pick? No se puede deshacer.")) return;
     await supabase.from("picks").delete().eq("id", pick.id);
     onDelete?.(pick.id);
     router.refresh();
@@ -140,7 +175,7 @@ export default function PickCard({ pick, currentUserId, userLiked, defaultShowCo
     <div
       className="rounded-2xl overflow-hidden group"
       style={{
-        background: "linear-gradient(160deg, #1f2f48 0%, #182438 100%)",
+        background: "linear-gradient(160deg, var(--card-top) 0%, var(--card-bottom) 100%)",
         boxShadow: status.glow,
         transition: "transform 0.25s ease, box-shadow 0.25s ease",
         willChange: "transform",
@@ -159,12 +194,7 @@ export default function PickCard({ pick, currentUserId, userLiked, defaultShowCo
       {/* Header */}
       <div className="flex items-start justify-between px-4 pt-4 pb-3 gap-2">
         <div className="flex items-center gap-2.5 min-w-0 flex-1">
-          <div
-            className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-black flex-shrink-0"
-            style={{ background: getAvatarColor(pick.profiles.username).bg, boxShadow: `0 2px 8px ${getAvatarColor(pick.profiles.username).shadow}` }}
-          >
-            {pick.profiles.username[0].toUpperCase()}
-          </div>
+          <Avatar username={pick.profiles.username} size={36} glow />
           <div className="min-w-0">
             <span className="inline-flex items-center gap-1.5 text-white text-sm font-bold">
               @{pick.profiles.username}
@@ -176,56 +206,21 @@ export default function PickCard({ pick, currentUserId, userLiked, defaultShowCo
               )}
             </span>
             <div className="flex items-center flex-wrap gap-x-2 gap-y-1">
-              <Link href={`/profile/${pick.profiles.username}`} className="text-green-400/70 hover:text-green-400 text-xs transition-colors leading-tight">
+              <Link href={`/profile/${pick.profiles.username}`} className="text-xs transition-colors leading-tight hover:underline" style={{ color: "var(--primary-light)" }}>
                 Ver perfil →
               </Link>
               {pick.user_id !== currentUserId && initialIsFollowing !== undefined && (
-                following ? (
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-xs font-semibold px-2 py-0.5 rounded-lg"
-                      style={{ color: "#4ade80", background: "rgba(74,222,128,0.08)", border: "1px solid rgba(74,222,128,0.20)" }}>
-                      Siguiendo ✓
-                    </span>
-                    <button
-                      onClick={handleFollow}
-                      className="text-xs font-semibold px-2 py-0.5 rounded-lg transition-all"
-                      style={{ color: "#f87171", background: "rgba(248,113,113,0.07)", border: "1px solid rgba(248,113,113,0.18)" }}
-                      onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(248,113,113,0.14)"; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(248,113,113,0.07)"; }}
-                    >
-                      Dejar de seguir
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    onClick={handleFollow}
-                    className="text-xs font-semibold px-2.5 py-1 rounded-lg transition-all"
-                    style={{ color: "#8fa8cc", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
-                    onMouseEnter={(e) => {
-                      const el = e.currentTarget;
-                      el.style.color = "#4ade80";
-                      el.style.background = "rgba(74,222,128,0.08)";
-                      el.style.borderColor = "rgba(74,222,128,0.20)";
-                    }}
-                    onMouseLeave={(e) => {
-                      const el = e.currentTarget;
-                      el.style.color = "#8fa8cc";
-                      el.style.background = "rgba(255,255,255,0.04)";
-                      el.style.borderColor = "rgba(255,255,255,0.08)";
-                    }}
-                  >
-                    + Seguir
-                  </button>
-                )
+                <FollowToggle following={following} username={pick.profiles.username} onToggle={handleFollow} />
               )}
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="flex items-center gap-1 flex-shrink-0">
           <span className="text-xs px-2.5 py-1 rounded-full font-semibold" style={status.badge}>
             {status.label}
           </span>
+          {pick.user_id === currentUserId && <PickOptionsMenu onDelete={handleDelete} />}
         </div>
       </div>
 
@@ -241,8 +236,8 @@ export default function PickCard({ pick, currentUserId, userLiked, defaultShowCo
 
       {/* Match card */}
       <div className="mx-3 mb-3 rounded-2xl overflow-hidden" style={{
-        background: "linear-gradient(160deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.02) 100%)",
-        border: "1px solid rgba(255,255,255,0.07)",
+        background: "linear-gradient(160deg, rgba(var(--tint-rgb), 0.04) 0%, rgba(var(--tint-rgb), 0.02) 100%)",
+        border: "1px solid rgba(var(--tint-rgb), 0.07)",
       }}>
         <div className="flex items-center justify-between px-3 pt-4 pb-3 gap-1">
 
@@ -253,10 +248,10 @@ export default function PickCard({ pick, currentUserId, userLiked, defaultShowCo
                 className="object-contain transition-transform duration-300 group-hover:scale-105 drop-shadow-lg" unoptimized />
             ) : (
               <div className="w-12 h-12 rounded-full flex items-center justify-center text-xl"
-                style={{ background: "rgba(255,255,255,0.06)" }}>⚽</div>
+                style={{ background: "rgba(var(--tint-rgb), 0.06)" }}>⚽</div>
             )}
             <p className="text-white font-black text-xs sm:text-sm leading-tight truncate w-full px-1">{pick.home_team}</p>
-            <p className="text-[10px] font-semibold" style={{ color: "#6b87ab" }}>Local</p>
+            <p className="text-[10px] font-semibold" style={{ color: "var(--text-3)" }}>Local</p>
           </div>
 
           {/* Score / VS */}
@@ -264,15 +259,15 @@ export default function PickCard({ pick, currentUserId, userLiked, defaultShowCo
             {hasResult ? (
               <div className="score-pop text-center">
                 <div className="flex items-center gap-1.5">
-                  <span className="font-black tabular-nums leading-none text-2xl sm:text-3xl" style={{ color: "#f0f6ff", textShadow: "0 0 16px rgba(255,255,255,0.12)" }}>
+                  <span className="font-black tabular-nums leading-none text-2xl sm:text-3xl" style={{ color: "var(--text)", textShadow: "0 0 16px rgba(var(--tint-rgb), 0.12)" }}>
                     {pick.home_score}
                   </span>
                   <span className="font-black text-base" style={{ color: "#7a9ab8" }}>-</span>
-                  <span className="font-black tabular-nums leading-none text-2xl sm:text-3xl" style={{ color: "#f0f6ff", textShadow: "0 0 16px rgba(255,255,255,0.12)" }}>
+                  <span className="font-black tabular-nums leading-none text-2xl sm:text-3xl" style={{ color: "var(--text)", textShadow: "0 0 16px rgba(var(--tint-rgb), 0.12)" }}>
                     {pick.away_score}
                   </span>
                 </div>
-                <span className="text-[10px] font-bold tracking-widest uppercase mt-1 block" style={{ color: "#6b87ab" }}>Final</span>
+                <span className="text-[10px] font-bold tracking-widest uppercase mt-1 block" style={{ color: "var(--text-3)" }}>Final</span>
               </div>
             ) : (
               <div className="text-center">
@@ -291,10 +286,10 @@ export default function PickCard({ pick, currentUserId, userLiked, defaultShowCo
                 className="object-contain transition-transform duration-300 group-hover:scale-105 drop-shadow-lg" unoptimized />
             ) : (
               <div className="w-12 h-12 rounded-full flex items-center justify-center text-xl"
-                style={{ background: "rgba(255,255,255,0.06)" }}>⚽</div>
+                style={{ background: "rgba(var(--tint-rgb), 0.06)" }}>⚽</div>
             )}
             <p className="text-white font-black text-xs sm:text-sm leading-tight truncate w-full px-1">{pick.away_team}</p>
-            <p className="text-[10px] font-semibold" style={{ color: "#6b87ab" }}>Visitante</p>
+            <p className="text-[10px] font-semibold" style={{ color: "var(--text-3)" }}>Visitante</p>
           </div>
         </div>
 
@@ -312,107 +307,103 @@ export default function PickCard({ pick, currentUserId, userLiked, defaultShowCo
         <div className="px-4 mb-3">
           <p className="text-sm leading-relaxed px-3 py-2 rounded-xl"
             style={{
-              color: "#c8d8f0",
-              background: "rgba(255,255,255,0.04)",
-              border: "1px solid rgba(255,255,255,0.07)",
+              color: "var(--text-2)",
+              background: "rgba(var(--tint-rgb), 0.04)",
+              border: "1px solid rgba(var(--tint-rgb), 0.07)",
               fontWeight: 500,
             }}>
-            "{pick.reasoning}"
+            {pick.reasoning}
           </p>
         </div>
       )}
 
       {/* Footer */}
       <div className="flex items-center flex-wrap px-4 pb-4 pt-3 gap-2"
-        style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+        style={{ borderTop: "1px solid rgba(var(--tint-rgb), 0.05)" }}>
         <button
           onClick={handleLike}
-          className={`flex items-center gap-2 transition-all duration-200 px-2.5 py-1 rounded-lg ${animating ? "scale-125" : "scale-100"}`}
-          style={{ color: liked ? "#4ade80" : "#4a6080" }}
+          className={`flex items-center gap-2 transition-all duration-200 px-2.5 py-1 rounded-lg ${animating ? "scale-125" : "scale-100"} ${liked ? "like-glow" : ""}`}
+          aria-label={liked ? "Quitar me gusta" : "Me gusta"}
+          aria-pressed={liked}
+          style={{ color: liked ? "var(--like)" : "var(--text-faint)" }}
           onMouseEnter={(e) => {
             const el = e.currentTarget;
-            el.style.color = "#4ade80";
-            el.style.background = "rgba(74,222,128,0.08)";
+            el.style.color = "var(--like)";
+            el.style.background = "rgba(var(--like-rgb), 0.08)";
           }}
           onMouseLeave={(e) => {
             const el = e.currentTarget;
-            el.style.color = liked ? "#4ade80" : "#4a6080";
+            el.style.color = liked ? "var(--like)" : "var(--text-faint)";
             el.style.background = "transparent";
           }}
         >
-          <span className="text-xl">{liked ? "⚽" : "🤍"}</span>
+          <HeartIcon size={20} filled={liked} />
           <span className="text-sm font-bold">{likesCount}</span>
         </button>
 
         <button
           onClick={() => { if (!currentUserId) { router.push("/login"); return; } setShowComments((v) => !v); }}
           className="flex items-center gap-1.5 text-sm transition-all duration-200 px-2.5 py-1 rounded-lg"
-          style={{ color: showComments ? "#4ade80" : "#4a6080" }}
+          style={{ color: showComments ? "var(--primary-light)" : "var(--text-faint)" }}
           onMouseEnter={(e) => {
             const el = e.currentTarget;
-            el.style.color = "#4ade80";
-            el.style.background = "rgba(74,222,128,0.08)";
+            el.style.color = "var(--primary-light)";
+            el.style.background = "rgba(var(--primary-light-rgb), 0.08)";
           }}
           onMouseLeave={(e) => {
             const el = e.currentTarget;
-            el.style.color = showComments ? "#4ade80" : "#4a6080";
+            el.style.color = showComments ? "var(--primary-light)" : "var(--text-faint)";
             el.style.background = "transparent";
           }}
         >
-          <span>💬</span>
+          <CommentIcon size={20} />
           <span className="font-semibold">{commentsCount > 0 ? commentsCount : "Comentar"}</span>
         </button>
 
-        {pick.user_id === currentUserId && (
-          <button
-            onClick={handleDelete}
-            className="text-xs font-semibold px-2.5 py-1 rounded-lg transition-all"
-            style={{ color: "#6b87ab", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.color = "#f87171";
-              e.currentTarget.style.background = "rgba(248,113,113,0.08)";
-              e.currentTarget.style.borderColor = "rgba(248,113,113,0.18)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.color = "#6b87ab";
-              e.currentTarget.style.background = "rgba(255,255,255,0.03)";
-              e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)";
-            }}
-          >
-            🗑 Borrar
-          </button>
-        )}
-
         <button
           onClick={handleShare}
+          disabled={sharing}
           className="text-xs font-semibold px-2.5 py-1 rounded-lg transition-all"
-          style={{ color: copied ? "#4ade80" : "#6b87ab", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}
-          onMouseEnter={(e) => { if (!copied) { e.currentTarget.style.color = "#8fa8cc"; e.currentTarget.style.background = "rgba(255,255,255,0.06)"; } }}
-          onMouseLeave={(e) => { if (!copied) { e.currentTarget.style.color = "#6b87ab"; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; } }}
+          style={{ color: copied ? "var(--primary-light)" : "var(--text-3)", background: "rgba(var(--tint-rgb), 0.03)", border: "1px solid rgba(var(--tint-rgb), 0.06)" }}
+          onMouseEnter={(e) => { if (!copied) { e.currentTarget.style.color = "var(--text-2)"; e.currentTarget.style.background = "rgba(var(--tint-rgb), 0.06)"; } }}
+          onMouseLeave={(e) => { if (!copied) { e.currentTarget.style.color = "var(--text-3)"; e.currentTarget.style.background = "rgba(var(--tint-rgb), 0.03)"; } }}
         >
-          {copied ? "✓ Copiado" : "🔗 Compartir"}
+          <span className="inline-flex items-center gap-1.5">
+            {copied ? <><CheckIcon size={13} /> Link copiado</> : sharing ? <>Preparando…</> : <><ShareIcon size={13} /> Compartir</>}
+          </span>
         </button>
 
         <Link
           href={`/picks/${pick.id}`}
           className="ml-auto text-xs font-semibold px-2.5 py-1 rounded-lg transition-all"
-          style={{ color: "#8fa8cc", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
+          style={{ color: "var(--text-2)", background: "rgba(var(--tint-rgb), 0.04)", border: "1px solid rgba(var(--tint-rgb), 0.08)" }}
           onMouseEnter={(e) => {
             const el = e.currentTarget;
-            el.style.color = "#4ade80";
-            el.style.background = "rgba(74,222,128,0.08)";
-            el.style.borderColor = "rgba(74,222,128,0.20)";
+            el.style.color = "var(--primary-light)";
+            el.style.background = "rgba(var(--primary-light-rgb), 0.08)";
+            el.style.borderColor = "rgba(var(--primary-light-rgb), 0.20)";
           }}
           onMouseLeave={(e) => {
             const el = e.currentTarget;
-            el.style.color = "#8fa8cc";
-            el.style.background = "rgba(255,255,255,0.04)";
-            el.style.borderColor = "rgba(255,255,255,0.08)";
+            el.style.color = "var(--text-2)";
+            el.style.background = "rgba(var(--tint-rgb), 0.04)";
+            el.style.borderColor = "rgba(var(--tint-rgb), 0.08)";
           }}
         >
           Ver pick →
         </Link>
       </div>
+
+      {/* Desplegable estilo Instagram: link para abrir los comentarios */}
+      {!showComments && commentsCount > 0 && (
+        <button
+          onClick={() => { if (!currentUserId) { router.push("/login"); return; } setShowComments(true); }}
+          className="block px-4 pb-4 -mt-1 text-sm font-semibold hover:underline"
+          style={{ color: "var(--text-3)" }}
+        >
+          {commentsCount === 1 ? "Ver 1 comentario" : `Ver los ${commentsCount} comentarios`}
+        </button>
+      )}
 
       {showComments && currentUserId && (
         <CommentsSection

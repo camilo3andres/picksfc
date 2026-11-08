@@ -7,6 +7,9 @@ export async function proxy(request: NextRequest) {
   if (process.env.MAINTENANCE_MODE === "true") {
     const { pathname } = request.nextUrl;
 
+    // El auto-resolver sigue funcionando en mantenimiento (está protegido con CRON_SECRET)
+    if (pathname.startsWith("/api/cron/")) return NextResponse.next();
+
     // Las APIs responden con error en vez de HTML
     if (pathname.startsWith("/api")) {
       return NextResponse.json({ error: "En mantenimiento" }, { status: 503 });
@@ -42,7 +45,10 @@ export async function proxy(request: NextRequest) {
     }
   );
 
-  const { data: { user } } = await supabase.auth.getUser();
+  // Refresca la sesión si hace falta y dice si hay usuario.
+  // getClaims() verifica el token sin ir al servidor de Supabase (más rápido que getUser()).
+  const { data } = await supabase.auth.getClaims();
+  const user = data?.claims?.sub ? { id: data.claims.sub } : null;
 
   // Rutas protegidas — redirige al login si no hay sesión
   const protectedRoutes = ["/picks/new", "/admin"];
@@ -62,6 +68,11 @@ export async function proxy(request: NextRequest) {
   return supabaseResponse;
 }
 
+// El proxy corre ANTES de cada petición, así que se excluye todo lo que no
+// necesita sesión: archivos estáticos, imágenes y las APIs públicas de fútbol.
+// Así esas peticiones responden más rápido.
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|icon.png|api/football|api/picks|.*\\.(?:png|jpg|jpeg|svg|webp|ico)$).*)",
+  ],
 };
