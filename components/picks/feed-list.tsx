@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase";
 import { FEED_PAGE_SIZE } from "@/lib/picks";
+import { fetchFeedPage } from "@/lib/feed";
 import { useLivePicks, type LivePick } from "@/lib/use-live-picks";
 import PickCard from "./pick-card";
 import Image from "next/image";
@@ -63,45 +64,31 @@ export default function FeedList({ initialPicks, initialLikedIds, currentUserId,
   const [dateFilter, setDateFilter] = useState<string | null>(null);
   const [feedTab, setFeedTab] = useState<"all" | "following">("all");
   const [followingIds, setFollowingIds] = useState<string[]>(initialFollowingIds);
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
-  // Si alguien sigue/deja de seguir desde otra pestaña, el filtro "Siguiendo" se entera
-  useEffect(() => {
-    if (!currentUserId) return;
-    const supabase = createClient();
-    supabase
-      .from("follows")
-      .select("following_id")
-      .eq("follower_id", currentUserId)
-      .then(({ data }) => {
-        if (data) setFollowingIds(data.map((f) => f.following_id));
-      });
-  }, [currentUserId]);
-
-  // Siguiente tanda de picks (más viejos) + los likes del usuario en esa tanda
-  async function loadMore() {
+  // Siguiente tanda de picks (más viejos) con los likes del usuario, en una sola consulta
+  const loadMore = useCallback(async () => {
     setLoadingMore(true);
-    const supabase = createClient();
-    const { data } = await supabase
-      .from("picks")
-      .select("*, profiles(username, is_verified)")
-      .order("created_at", { ascending: false })
-      .range(picks.length, picks.length + FEED_PAGE_SIZE - 1);
-
-    const page = (data ?? []) as PickWithProfile[];
-    if (currentUserId && page.length) {
-      const { data: likes } = await supabase
-        .from("likes")
-        .select("pick_id")
-        .eq("user_id", currentUserId)
-        .in("pick_id", page.map((p) => p.id));
-      setLikedIds((prev) => [...prev, ...(likes ?? []).map((l) => l.pick_id)]);
-    }
-
+    const { picks: page, likedIds: pageLiked } = await fetchFeedPage(createClient(), picks.length, currentUserId);
+    setLikedIds((prev) => [...prev, ...pageLiked]);
     // Evita duplicados si mientras tanto llegó un pick nuevo en vivo
     setPicks((prev) => [...prev, ...page.filter((p) => !prev.some((q) => q.id === p.id))]);
     setHasMore(page.length === FEED_PAGE_SIZE);
     setLoadingMore(false);
-  }
+  }, [picks.length, currentUserId, setPicks]);
+
+  // Scroll infinito: cuando el final de la lista está por aparecer en pantalla,
+  // se carga la siguiente tanda sola (rootMargin = empieza 600px antes de llegar)
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el || !hasMore || loadingMore) return;
+    const observer = new IntersectionObserver(
+      (entries) => { if (entries[0].isIntersecting) loadMore(); },
+      { rootMargin: "600px" }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [hasMore, loadingMore, loadMore]);
 
   // Racha por usuario: picks resueltos consecutivos más recientes
   const streakMap: Record<string, number> = {};
@@ -271,9 +258,10 @@ export default function FeedList({ initialPicks, initialLikedIds, currentUserId,
         </div>
       )}
 
-      {/* Paginación: los filtros trabajan sobre los picks ya cargados */}
+      {/* Scroll infinito: este marcador invisible avisa cuando llegas al final.
+          El botón queda de respaldo (teclado, o si el navegador no soporta el observador). */}
       {hasMore && (
-        <div className="flex justify-center pt-2">
+        <div ref={sentinelRef} className="flex justify-center pt-2">
           <button
             onClick={loadMore}
             disabled={loadingMore}

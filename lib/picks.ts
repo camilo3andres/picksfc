@@ -1,8 +1,8 @@
 import type { Pick } from "./types";
 
-// Cuántos picks se cargan en el feed por tanda ("Cargar más" trae la siguiente).
-// Bajar todos los picks de la base en cada visita se vuelve lento a medida que crecen.
-export const FEED_PAGE_SIZE = 30;
+// Cuántos picks se cargan en el feed por tanda. Los siguientes llegan solos al
+// bajar (scroll infinito). Pocos por tanda = la página aparece y responde más rápido.
+export const FEED_PAGE_SIZE = 12;
 
 // Texto corto de cada predicción (tarjeta del pick)
 export const PREDICTION_LABEL: Record<Pick["prediction"], string> = {

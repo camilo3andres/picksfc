@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient, getSessionUser } from "@/lib/supabase-server";
 import LivePickList from "@/components/picks/live-pick-list";
@@ -126,13 +127,13 @@ export default async function ProfilePage({ params }: Props) {
                   )}
                 </div>
                 {isOwnProfile ? (
-                  <a
+                  <Link
                     href="/profile/edit"
                     className="text-xs font-bold px-3 py-1.5 rounded-lg transition-all"
                     style={{ background: "rgba(var(--tint-rgb), 0.07)", color: "var(--text-2)", border: "1px solid rgba(var(--tint-rgb), 0.10)" }}
                   >
                     Editar perfil
-                  </a>
+                  </Link>
                 ) : user && (
                   <FollowButton
                     currentUserId={user.id}
@@ -334,9 +335,9 @@ export default async function ProfilePage({ params }: Props) {
               {isOwnProfile ? "Aún no publicaste picks" : "Este usuario aún no publicó picks"}
             </p>
             {isOwnProfile && (
-              <a href="/picks/new" className="inline-block mt-3 text-sm font-bold transition-colors" style={{ color: "var(--primary-light)" }}>
+              <Link href="/picks/new" className="inline-block mt-3 text-sm font-bold transition-colors" style={{ color: "var(--primary-light)" }}>
                 + Publicar primer pick →
-              </a>
+              </Link>
             )}
           </div>
         ) : (
